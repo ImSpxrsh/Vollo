@@ -1,0 +1,42 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/chunks/chunk.gd" id="1_chunk"]
+[ext_resource type="Script" path="res://scenes/chunks/ground_segment.gd" id="2_ground"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/HazardWall.tscn" id="3_wall"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/ShieldBubble.tscn" id="4_bubble"]
+[ext_resource type="Texture2D" path="res://assets/sprites/warning_sign.png" id="5_warning"]
+[ext_resource type="Texture2D" path="res://assets/sprites/chain_fence.png" id="6_fence"]
+
+[node name="Chunk_HazardWall" type="Node2D"]
+script = ExtResource("1_chunk")
+difficulty = 0.25
+weight = 0.9
+min_distance = 40
+bubble_chance = 0.55
+
+[node name="Ground1" type="StaticBody2D" parent="."]
+position = Vector2(0, 0)
+collision_mask = 0
+script = ExtResource("2_ground")
+width = 1300.0
+
+[node name="HazardWall1" parent="." instance=ExtResource("3_wall")]
+position = Vector2(800, 0)
+
+[node name="WarningAhead" type="Sprite2D" parent="."]
+position = Vector2(500, -38)
+texture = ExtResource("5_warning")
+scale = Vector2(0.48, 0.48)
+z_index = 1
+
+[node name="FenceBehindWall" type="Sprite2D" parent="."]
+position = Vector2(1010, -82)
+texture = ExtResource("6_fence")
+modulate = Color(0.74, 0.78, 0.86, 0.48)
+z_index = -1
+
+[node name="ShieldBubble1" parent="." instance=ExtResource("4_bubble")]
+position = Vector2(420, -150)
+
+[node name="ExitAnchor" type="Marker2D" parent="."]
+position = Vector2(1300, 0)

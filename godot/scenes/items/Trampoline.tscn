@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/items/BaseItem.tscn" id="1_base"]
+[ext_resource type="Script" path="res://scenes/items/trampoline.gd" id="2_tramp"]
+
+[node name="Trampoline" groups=["item", "trampoline"] instance=ExtResource("1_base")]
+script = ExtResource("2_tramp")
+size = Vector2(128, 42)
+color = Color(0, 0.960784, 0.831373, 1)

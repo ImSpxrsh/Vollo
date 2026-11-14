@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/game/versus.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PauseMenu.tscn" id="2_pause"]
+
+[node name="Versus" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="PauseMenu" parent="." instance=ExtResource("2_pause")]

@@ -1,0 +1,48 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/chunks/chunk.gd" id="1_chunk"]
+[ext_resource type="Script" path="res://scenes/chunks/ground_segment.gd" id="2_ground"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/Spike.tscn" id="3_spike"]
+[ext_resource type="Texture2D" path="res://assets/sprites/warning_sign.png" id="4_warning"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/StarPickup.tscn" id="5_star"]
+[ext_resource type="Texture2D" path="res://assets/sprites/chain_fence.png" id="6_fence"]
+
+[node name="Chunk_SpikeFloor" type="Node2D"]
+script = ExtResource("1_chunk")
+difficulty = 0.15
+weight = 1.0
+min_distance = 0
+bubble_chance = 0.15
+
+[node name="Ground1" type="StaticBody2D" parent="."]
+position = Vector2(0, 0)
+collision_mask = 0
+script = ExtResource("2_ground")
+width = 1200.0
+
+[node name="Spike1" parent="." instance=ExtResource("3_spike")]
+position = Vector2(520, 0)
+
+[node name="Spike2" parent="." instance=ExtResource("3_spike")]
+position = Vector2(600, 0)
+
+[node name="Spike3" parent="." instance=ExtResource("3_spike")]
+position = Vector2(680, 0)
+
+[node name="WarningAhead" type="Sprite2D" parent="."]
+position = Vector2(250, -35)
+texture = ExtResource("4_warning")
+scale = Vector2(0.42, 0.42)
+z_index = 1
+
+[node name="RiskStar" parent="." instance=ExtResource("5_star")]
+position = Vector2(600, -190)
+
+[node name="FenceLine" type="Sprite2D" parent="."]
+position = Vector2(1000, -85)
+texture = ExtResource("6_fence")
+modulate = Color(0.72, 0.78, 0.83, 0.48)
+z_index = -1
+
+[node name="ExitAnchor" type="Marker2D" parent="."]
+position = Vector2(1200, 0)

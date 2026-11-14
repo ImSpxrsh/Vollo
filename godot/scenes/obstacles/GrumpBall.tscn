@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/obstacles/grump_ball.gd" id="1_script"]
+
+[node name="GrumpBall" type="Area2D"]
+script = ExtResource("1_script")

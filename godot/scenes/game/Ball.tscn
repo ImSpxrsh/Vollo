@@ -1,0 +1,41 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/game/ball.gd" id="1_ball"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ball"]
+friction = 0.0
+bounce = 0.3
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ball"]
+radius = 32.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_sensor"]
+radius = 30.0
+
+[node name="Ball" type="RigidBody2D" groups=["ball"]]
+position = Vector2(160, 400)
+collision_layer = 2
+collision_mask = 5
+physics_material_override = SubResource("PhysicsMaterial_ball")
+lock_rotation = true
+continuous_cd = 2
+contact_monitor = true
+max_contacts_reported = 4
+script = ExtResource("1_ball")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_ball")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Trail" type="Line2D" parent="."]
+z_index = -1
+top_level = true
+
+[node name="HazardSensor" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HazardSensor"]
+shape = SubResource("CircleShape2D_sensor")

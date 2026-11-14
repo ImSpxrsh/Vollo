@@ -1,0 +1,150 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://addons/maaacks_menus_template/base/nodes/menus/main_menu/main_menu.tscn" id="1_base"]
+[ext_resource type="Script" path="res://scenes/ui/main_menu.gd" id="2_script"]
+[ext_resource type="Theme" path="res://resources/themes/bounce_back_theme.tres" id="3_theme"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SettingsMenu.tscn" id="4_settings"]
+[ext_resource type="PackedScene" path="res://scenes/windows/main_menu_credits_window.tscn" id="5_credits"]
+[ext_resource type="Script" path="res://scenes/ui/menu_demo.gd" id="6_demo"]
+
+[node name="MainMenu" instance=ExtResource("1_base")]
+theme = ExtResource("3_theme")
+script = ExtResource("2_script")
+options_packed_scene = ExtResource("4_settings")
+credits_packed_scene = ExtResource("5_credits")
+
+[node name="BackgroundTextureRect" parent="."]
+visible = false
+
+[node name="TitleMargin" parent="MenuContainer"]
+visible = false
+
+[node name="SubTitleMargin" parent="MenuContainer"]
+visible = false
+
+[node name="MenuButtonsMargin" parent="MenuContainer"]
+theme_override_constants/margin_top = 226
+theme_override_constants/margin_bottom = 40
+
+[node name="MenuButtonsBoxContainer" parent="MenuContainer/MenuButtonsMargin/MenuButtonsContainer"]
+offset_left = -140.0
+offset_top = -132.0
+offset_right = 140.0
+offset_bottom = 132.0
+theme_override_constants/separation = 8
+
+[node name="NewGameButton" parent="MenuContainer/MenuButtonsMargin/MenuButtonsContainer/MenuButtonsBoxContainer"]
+custom_minimum_size = Vector2(0, 64)
+theme_type_variation = &"BBPrimaryButton"
+text = "PLAY"
+
+[node name="OptionsButton" parent="MenuContainer/MenuButtonsMargin/MenuButtonsContainer/MenuButtonsBoxContainer"]
+custom_minimum_size = Vector2(0, 42)
+text = "SETTINGS"
+
+[node name="CreditsButton" parent="MenuContainer/MenuButtonsMargin/MenuButtonsContainer/MenuButtonsBoxContainer"]
+custom_minimum_size = Vector2(0, 42)
+text = "CREDITS"
+
+[node name="ExitButton" parent="MenuContainer/MenuButtonsMargin/MenuButtonsContainer/MenuButtonsBoxContainer"]
+custom_minimum_size = Vector2(0, 42)
+text = "QUIT"
+
+[node name="VersionLabel" parent="VersionMargin/VersionContainer"]
+theme_type_variation = &"BBDim"
+
+[node name="ExitConfirmation" parent="."]
+custom_minimum_size = Vector2(340, 170)
+offset_left = -170.0
+offset_top = -85.0
+offset_right = 170.0
+offset_bottom = 85.0
+theme = ExtResource("3_theme")
+confirm_button_text = "QUIT"
+title = "Quit?"
+text = "Leave Variety's fall?"
+close_button_text = "STAY"
+
+[node name="BackgroundLayer" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Grid" type="ColorRect" parent="BackgroundLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.34, 0.55, 0.22, 1)
+
+[node name="Backdrop" type="TextureRect" parent="BackgroundLayer"]
+visible = false
+offset_right = 1420.0
+offset_bottom = 800.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Shade" type="ColorRect" parent="BackgroundLayer"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.24, 0.12, 0.04, 0.12)
+
+[node name="MenuDemo" type="Node2D" parent="BackgroundLayer"]
+script = ExtResource("6_demo")
+
+[node name="TitleBlock" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 56.0
+offset_bottom = 290.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="TitleBlock"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 136.0
+grow_horizontal = 2
+theme_type_variation = &"BBTitle"
+text = "VOLL"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Tagline" type="Label" parent="TitleBlock"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 136.0
+offset_bottom = 162.0
+grow_horizontal = 2
+theme_type_variation = &"BBDim"
+text = "No road ahead. Build one before Variety gets there."
+horizontal_alignment = 1
+
+[node name="BestBadge" type="PanelContainer" parent="TitleBlock"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -90.0
+offset_top = 176.0
+offset_right = 90.0
+offset_bottom = 212.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_type_variation = &"BBBadge"
+
+[node name="BestLabel" type="Label" parent="TitleBlock/BestBadge"]
+layout_mode = 2
+theme_type_variation = &"BBAccent"
+text = "BEST  0 m"
+horizontal_alignment = 1
+vertical_alignment = 1

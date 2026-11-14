@@ -1,0 +1,34 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/chunks/chunk.gd" id="1_chunk"]
+[ext_resource type="Script" path="res://scenes/chunks/ground_segment.gd" id="2_ground"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/Spike.tscn" id="3_spike"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/ShieldBubble.tscn" id="4_bubble"]
+
+[node name="Chunk_SpikeGap" type="Node2D"]
+script = ExtResource("1_chunk")
+difficulty = 0.35
+weight = 0.8
+min_distance = 80
+bubble_chance = 0.55
+
+[node name="Ground1" type="StaticBody2D" parent="."]
+position = Vector2(0, 0)
+collision_mask = 0
+script = ExtResource("2_ground")
+width = 500.0
+
+[node name="Ground2" type="StaticBody2D" parent="."]
+position = Vector2(660, 0)
+collision_mask = 0
+script = ExtResource("2_ground")
+width = 740.0
+
+[node name="Spike1" parent="." instance=ExtResource("3_spike")]
+position = Vector2(1060, 0)
+
+[node name="ShieldBubble1" parent="." instance=ExtResource("4_bubble")]
+position = Vector2(580, -150)
+
+[node name="ExitAnchor" type="Marker2D" parent="."]
+position = Vector2(1400, 0)

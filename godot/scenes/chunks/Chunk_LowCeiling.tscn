@@ -1,0 +1,43 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/chunks/chunk.gd" id="1_chunk"]
+[ext_resource type="Script" path="res://scenes/chunks/ground_segment.gd" id="2_ground"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/Spike.tscn" id="3_spike"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/StarPickup.tscn" id="4_star"]
+[ext_resource type="Texture2D" path="res://assets/sprites/broken_pipe.png" id="5_pipe"]
+
+[node name="Chunk_LowCeiling" type="Node2D"]
+script = ExtResource("1_chunk")
+difficulty = 0.5
+weight = 0.7
+min_distance = 200
+bubble_chance = 0.15
+
+[node name="Ground1" type="StaticBody2D" parent="."]
+position = Vector2(0, 0)
+collision_mask = 0
+script = ExtResource("2_ground")
+width = 1700.0
+
+[node name="Ceiling1" type="StaticBody2D" parent="."]
+position = Vector2(250, -310)
+collision_mask = 0
+script = ExtResource("2_ground")
+width = 750.0
+thickness = 160.0
+ceiling = true
+
+[node name="Spike1" parent="." instance=ExtResource("3_spike")]
+position = Vector2(1400, 0)
+
+[node name="LowRouteStar" parent="." instance=ExtResource("4_star")]
+position = Vector2(820, -72)
+
+[node name="LeakingPipe" type="Sprite2D" parent="."]
+position = Vector2(620, -205)
+texture = ExtResource("5_pipe")
+modulate = Color(0.76, 0.82, 0.86, 0.72)
+z_index = -1
+
+[node name="ExitAnchor" type="Marker2D" parent="."]
+position = Vector2(1700, 0)

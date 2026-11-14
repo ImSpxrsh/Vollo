@@ -1,0 +1,32 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://addons/maaacks_menus_template/base/nodes/windows/popup_window_scene_container.tscn" id="1_container"]
+[ext_resource type="Script" path="res://scenes/ui/settings_menu.gd" id="2_script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/settings_tabs.tscn" id="3_tabs"]
+[ext_resource type="Theme" path="res://resources/themes/bounce_back_theme.tres" id="4_theme"]
+
+[node name="SettingsMenu" instance=ExtResource("1_container")]
+process_mode = 3
+custom_minimum_size = Vector2(760, 560)
+offset_left = -380.0
+offset_top = -280.0
+offset_right = 380.0
+offset_bottom = 280.0
+theme = ExtResource("4_theme")
+script = ExtResource("2_script")
+packed_scene = ExtResource("3_tabs")
+update_content = true
+title = "SETTINGS"
+close_button_text = "BACK"
+
+[node name="TitleMargin" parent="ContentContainer/BoxContainer"]
+visible = true
+
+[node name="TitleLabel" parent="ContentContainer/BoxContainer/TitleMargin/BoxContainer"]
+theme_type_variation = &"BBHeading"
+text = "SETTINGS"
+
+[node name="CloseButton" parent="ContentContainer/BoxContainer/MenuButtonsMargin/MenuButtons"]
+custom_minimum_size = Vector2(180, 48)
+size_flags_horizontal = 4
+text = "BACK"

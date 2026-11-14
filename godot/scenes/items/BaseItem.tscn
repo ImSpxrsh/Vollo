@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/items/base_item.gd" id="1_base"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_item"]
+size = Vector2(128, 20)
+
+[node name="BaseItem" type="StaticBody2D" groups=["item"]]
+collision_mask = 0
+script = ExtResource("1_base")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_item")
+
+[node name="Visual" type="Node2D" parent="."]

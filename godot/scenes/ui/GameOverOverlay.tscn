@@ -1,0 +1,189 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/game_over_overlay.gd" id="1_script"]
+[ext_resource type="Theme" path="res://resources/themes/bounce_back_theme.tres" id="2_theme"]
+
+[node name="GameOverOverlay" type="CanvasLayer"]
+process_mode = 3
+layer = 30
+visible = false
+script = ExtResource("1_script")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+
+[node name="Dim" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0509804, 0.0588235, 0.0784314, 0.62)
+
+[node name="Center" type="CenterContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Root/Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(460, 0)
+layout_mode = 2
+theme_type_variation = &"BBGlass"
+
+[node name="VBox" type="VBoxContainer" parent="Root/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeaderLabel" type="Label" parent="Root/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BBDanger"
+theme_override_font_sizes/font_size = 22
+text = "CRASHED"
+horizontal_alignment = 1
+
+[node name="VerdictLabel" type="Label" parent="Root/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BBDim"
+theme_override_colors/font_color = Color(1, 0.819608, 0.403922, 1)
+theme_override_font_sizes/font_size = 14
+text = "EVERY CRASH TEACHES THE NEXT PATH."
+horizontal_alignment = 1
+
+[node name="DistanceRow" type="HBoxContainer" parent="Root/Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="DeadIcon" type="TextureRect" parent="Root/Center/Panel/VBox/DistanceRow"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DistanceLabel" type="Label" parent="Root/Center/Panel/VBox/DistanceRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BBBig"
+theme_override_font_sizes/font_size = 80
+text = "0 m"
+horizontal_alignment = 1
+
+[node name="BadgeRow" type="CenterContainer" parent="Root/Center/Panel/VBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+
+[node name="NewBestBadge" type="PanelContainer" parent="Root/Center/Panel/VBox/BadgeRow"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"BBBadge"
+
+[node name="Label" type="Label" parent="Root/Center/Panel/VBox/BadgeRow/NewBestBadge"]
+layout_mode = 2
+theme_type_variation = &"BBAccent"
+text = "NEW BEST"
+horizontal_alignment = 1
+
+[node name="Stats" type="HBoxContainer" parent="Root/Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 48
+alignment = 1
+
+[node name="Best" type="VBoxContainer" parent="Root/Center/Panel/VBox/Stats"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Caption" type="Label" parent="Root/Center/Panel/VBox/Stats/Best"]
+layout_mode = 2
+theme_type_variation = &"BBDim"
+text = "BEST"
+horizontal_alignment = 1
+
+[node name="BestValue" type="Label" parent="Root/Center/Panel/VBox/Stats/Best"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BBHeading"
+theme_override_font_sizes/font_size = 28
+text = "0 m"
+horizontal_alignment = 1
+
+[node name="Bounces" type="VBoxContainer" parent="Root/Center/Panel/VBox/Stats"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Caption" type="Label" parent="Root/Center/Panel/VBox/Stats/Bounces"]
+layout_mode = 2
+theme_type_variation = &"BBDim"
+text = "BOUNCES"
+horizontal_alignment = 1
+
+[node name="BouncesValue" type="Label" parent="Root/Center/Panel/VBox/Stats/Bounces"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BBHeading"
+theme_override_font_sizes/font_size = 28
+text = "0"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Root/Center/Panel/VBox"]
+layout_mode = 2
+
+[node name="StarsLabel" type="Label" parent="Root/Center/Panel/VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"BBAccent"
+theme_override_colors/font_color = Color(1, 0.819608, 0.403922, 1)
+text = "SHARDS 0 THIS RUN · 0 FOUND"
+horizontal_alignment = 1
+
+[node name="BounceBackButton" type="Button" parent="Root/Center/Panel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+theme_type_variation = &"BBPrimaryButton"
+text = "BOUNCE BACK"
+
+[node name="HintRow" type="HBoxContainer" parent="Root/Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="SpaceCap" type="TextureRect" parent="Root/Center/Panel/VBox/HintRow"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(64, 24)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HintLabel" type="Label" parent="Root/Center/Panel/VBox/HintRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BBDim"
+text = "Press Space"
+horizontal_alignment = 1
+
+[node name="MainMenuButton" type="Button" parent="Root/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"BBGhostButton"
+text = "Main Menu"

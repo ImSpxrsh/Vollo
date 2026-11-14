@@ -1,0 +1,342 @@
+[gd_resource type="Theme" load_steps=16 format=3]
+
+[sub_resource type="SystemFont" id="Font_ui"]
+font_names = PackedStringArray("Avenir Next Condensed", "Arial Rounded MT Bold", "Trebuchet MS", "Arial")
+font_weight = 700
+
+[sub_resource type="SystemFont" id="Font_title"]
+font_names = PackedStringArray("Copperplate", "Avenir Next Condensed", "Arial Rounded MT Bold")
+font_weight = 800
+
+[sub_resource type="StyleBoxFlat" id="WoodNormal"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.56, 0.294, 0.118, 0.98)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.255, 0.118, 0.055, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+shadow_color = Color(0.16, 0.07, 0.025, 0.55)
+shadow_size = 5
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="WoodHover"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.72, 0.407, 0.154, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.96, 0.706, 0.286, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+shadow_color = Color(0.16, 0.07, 0.025, 0.62)
+shadow_size = 7
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="WoodPressed"]
+content_margin_left = 20.0
+content_margin_top = 12.0
+content_margin_right = 20.0
+content_margin_bottom = 8.0
+bg_color = Color(0.40, 0.196, 0.075, 1)
+border_width_left = 3
+border_width_top = 4
+border_width_right = 3
+border_width_bottom = 2
+border_color = Color(0.22, 0.09, 0.035, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="WoodDisabled"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.38, 0.29, 0.22, 0.8)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.26, 0.19, 0.14, 0.8)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="PrimaryNormal"]
+content_margin_left = 28.0
+content_margin_top = 14.0
+content_margin_right = 28.0
+content_margin_bottom = 14.0
+bg_color = Color(0.82, 0.50, 0.12, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.28, 0.12, 0.04, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+shadow_color = Color(0.20, 0.08, 0.02, 0.68)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="PrimaryHover"]
+content_margin_left = 28.0
+content_margin_top = 14.0
+content_margin_right = 28.0
+content_margin_bottom = 14.0
+bg_color = Color(0.98, 0.67, 0.20, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(1, 0.86, 0.45, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+shadow_color = Color(0.24, 0.09, 0.02, 0.75)
+shadow_size = 10
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="ParchmentPanel"]
+content_margin_left = 34.0
+content_margin_top = 26.0
+content_margin_right = 34.0
+content_margin_bottom = 26.0
+bg_color = Color(0.94, 0.72, 0.42, 0.97)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.35, 0.16, 0.07, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.12, 0.06, 0.025, 0.65)
+shadow_size = 14
+shadow_offset = Vector2(0, 5)
+
+[sub_resource type="StyleBoxFlat" id="BadgePanel"]
+content_margin_left = 18.0
+content_margin_top = 6.0
+content_margin_right = 18.0
+content_margin_bottom = 6.0
+bg_color = Color(1, 0.82, 0.46, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.47, 0.23, 0.08, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="GhostNormal"]
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+bg_color = Color(0.96, 0.80, 0.56, 0.42)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.38, 0.19, 0.08, 0.85)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="InputPanel"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(1, 0.86, 0.62, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.24, 0.10, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="TabSelected"]
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+bg_color = Color(0.80, 0.52, 0.21, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_color = Color(0.30, 0.14, 0.055, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+
+[sub_resource type="StyleBoxFlat" id="TabUnselected"]
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+bg_color = Color(0.66, 0.38, 0.16, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_color = Color(0.32, 0.15, 0.06, 1)
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+
+[sub_resource type="StyleBoxFlat" id="ProgressBackground"]
+bg_color = Color(0.30, 0.16, 0.08, 0.88)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.19, 0.09, 0.04, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="ProgressFill"]
+bg_color = Color(0.31, 0.63, 0.25, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxLine" id="Separator"]
+color = Color(0.43, 0.23, 0.10, 0.72)
+thickness = 2
+
+[sub_resource type="StyleBoxEmpty" id="Empty"]
+
+[resource]
+default_font = SubResource("Font_ui")
+default_font_size = 18
+BBAccent/base_type = &"Label"
+BBAccent/colors/font_color = Color(0.20, 0.48, 0.17, 1)
+BBAccent/fonts/font = SubResource("Font_ui")
+BBBadge/base_type = &"PanelContainer"
+BBBadge/styles/panel = SubResource("BadgePanel")
+BBBig/base_type = &"Label"
+BBBig/colors/font_color = Color(0.28, 0.11, 0.04, 1)
+BBBig/colors/font_outline_color = Color(1, 0.86, 0.58, 0.9)
+BBBig/constants/outline_size = 3
+BBBig/font_sizes/font_size = 60
+BBBig/fonts/font = SubResource("Font_title")
+BBDanger/base_type = &"Label"
+BBDanger/colors/font_color = Color(0.68, 0.12, 0.08, 1)
+BBDanger/fonts/font = SubResource("Font_title")
+BBDim/base_type = &"Label"
+BBDim/colors/font_color = Color(0.34, 0.20, 0.12, 0.9)
+BBDim/font_sizes/font_size = 16
+BBGhostButton/base_type = &"Button"
+BBGhostButton/colors/font_color = Color(0.28, 0.12, 0.05, 1)
+BBGhostButton/styles/normal = SubResource("GhostNormal")
+BBGhostButton/styles/hover = SubResource("BadgePanel")
+BBGhostButton/styles/pressed = SubResource("WoodPressed")
+BBGlass/base_type = &"PanelContainer"
+BBGlass/styles/panel = SubResource("ParchmentPanel")
+BBHeading/base_type = &"Label"
+BBHeading/colors/font_color = Color(0.27, 0.11, 0.04, 1)
+BBHeading/font_sizes/font_size = 34
+BBHeading/fonts/font = SubResource("Font_title")
+BBPrimaryButton/base_type = &"Button"
+BBPrimaryButton/colors/font_color = Color(0.24, 0.10, 0.03, 1)
+BBPrimaryButton/colors/font_hover_color = Color(0.19, 0.08, 0.025, 1)
+BBPrimaryButton/colors/font_pressed_color = Color(1, 0.86, 0.55, 1)
+BBPrimaryButton/font_sizes/font_size = 30
+BBPrimaryButton/fonts/font = SubResource("Font_title")
+BBPrimaryButton/styles/normal = SubResource("PrimaryNormal")
+BBPrimaryButton/styles/hover = SubResource("PrimaryHover")
+BBPrimaryButton/styles/pressed = SubResource("WoodPressed")
+BBPrimaryButton/styles/focus = SubResource("PrimaryHover")
+BBTitle/base_type = &"Label"
+BBTitle/colors/font_color = Color(0.54, 0.27, 0.09, 1)
+BBTitle/colors/font_outline_color = Color(0.24, 0.09, 0.025, 1)
+BBTitle/colors/font_shadow_color = Color(1, 0.72, 0.28, 0.6)
+BBTitle/constants/outline_size = 5
+BBTitle/constants/shadow_offset_y = 6
+BBTitle/constants/shadow_outline_size = 8
+BBTitle/font_sizes/font_size = 104
+BBTitle/fonts/font = SubResource("Font_title")
+Button/colors/font_color = Color(1, 0.87, 0.62, 1)
+Button/colors/font_disabled_color = Color(0.63, 0.53, 0.41, 1)
+Button/colors/font_focus_color = Color(1, 0.95, 0.72, 1)
+Button/colors/font_hover_color = Color(1, 0.95, 0.72, 1)
+Button/colors/font_pressed_color = Color(1, 0.82, 0.48, 1)
+Button/font_sizes/font_size = 19
+Button/styles/normal = SubResource("WoodNormal")
+Button/styles/hover = SubResource("WoodHover")
+Button/styles/pressed = SubResource("WoodPressed")
+Button/styles/hover_pressed = SubResource("WoodPressed")
+Button/styles/disabled = SubResource("WoodDisabled")
+Button/styles/focus = SubResource("WoodHover")
+CheckBox/colors/font_color = Color(0.27, 0.12, 0.05, 1)
+CheckButton/colors/font_color = Color(0.27, 0.12, 0.05, 1)
+HSeparator/styles/separator = SubResource("Separator")
+HSlider/styles/slider = SubResource("ProgressBackground")
+HSlider/styles/grabber_area = SubResource("ProgressFill")
+ItemList/colors/font_color = Color(0.27, 0.12, 0.05, 1)
+ItemList/styles/panel = SubResource("InputPanel")
+Label/colors/font_color = Color(0.27, 0.12, 0.05, 1)
+LineEdit/colors/font_color = Color(0.27, 0.12, 0.05, 1)
+LineEdit/styles/normal = SubResource("InputPanel")
+LineEdit/styles/focus = SubResource("BadgePanel")
+LinkButton/colors/font_color = Color(0.18, 0.43, 0.14, 1)
+MenuButton/colors/font_color = Color(1, 0.87, 0.62, 1)
+MenuButton/styles/normal = SubResource("WoodNormal")
+MenuButton/styles/hover = SubResource("WoodHover")
+MenuButton/styles/pressed = SubResource("WoodPressed")
+OptionButton/colors/font_color = Color(1, 0.87, 0.62, 1)
+OptionButton/styles/normal = SubResource("WoodNormal")
+OptionButton/styles/hover = SubResource("WoodHover")
+OptionButton/styles/pressed = SubResource("WoodPressed")
+Panel/styles/panel = SubResource("ParchmentPanel")
+PanelContainer/styles/panel = SubResource("ParchmentPanel")
+PopupMenu/colors/font_color = Color(0.27, 0.12, 0.05, 1)
+PopupMenu/styles/panel = SubResource("ParchmentPanel")
+PopupMenu/styles/hover = SubResource("BadgePanel")
+PopupPanel/styles/panel = SubResource("ParchmentPanel")
+ProgressBar/colors/font_color = Color(1, 0.90, 0.68, 1)
+ProgressBar/styles/background = SubResource("ProgressBackground")
+ProgressBar/styles/fill = SubResource("ProgressFill")
+RichTextLabel/colors/default_color = Color(0.27, 0.12, 0.05, 1)
+TabContainer/colors/font_selected_color = Color(0.24, 0.10, 0.03, 1)
+TabContainer/colors/font_unselected_color = Color(1, 0.84, 0.57, 1)
+TabContainer/styles/panel = SubResource("ParchmentPanel")
+TabContainer/styles/tab_selected = SubResource("TabSelected")
+TabContainer/styles/tab_unselected = SubResource("TabUnselected")
+TabContainer/styles/tab_hovered = SubResource("WoodHover")
+TabContainer/styles/tab_focus = SubResource("Empty")
+TabContainer/styles/tabbar_background = SubResource("Empty")
+Tree/colors/font_color = Color(0.27, 0.12, 0.05, 1)
+Tree/colors/font_selected_color = Color(0.18, 0.42, 0.14, 1)
+Tree/styles/panel = SubResource("InputPanel")
+Tree/styles/selected = SubResource("BadgePanel")
+VSlider/styles/slider = SubResource("ProgressBackground")
+VSlider/styles/grabber_area = SubResource("ProgressFill")

@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/game/game_camera.gd" id="1_cam"]
+
+[node name="GameCamera" type="Camera2D"]
+process_mode = 3
+position = Vector2(640, 360)
+ignore_rotation = false
+script = ExtResource("1_cam")

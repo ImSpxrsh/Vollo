@@ -1,0 +1,24 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/pause_menu.gd" id="1_layer"]
+[ext_resource type="PackedScene" path="res://scenes/windows/pause_menu.tscn" id="2_panel"]
+[ext_resource type="Script" path="res://scenes/ui/pause_menu_panel.gd" id="3_panel_script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SettingsMenu.tscn" id="4_settings"]
+[ext_resource type="Theme" path="res://resources/themes/bounce_back_theme.tres" id="5_theme"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+process_mode = 3
+layer = 40
+script = ExtResource("1_layer")
+
+[node name="Panel" parent="." instance=ExtResource("2_panel")]
+visible = false
+custom_minimum_size = Vector2(340, 400)
+offset_left = -170.0
+offset_top = -200.0
+offset_right = 170.0
+offset_bottom = 200.0
+theme = ExtResource("5_theme")
+script = ExtResource("3_panel_script")
+options_menu_scene = ExtResource("4_settings")
+pauses_game = false

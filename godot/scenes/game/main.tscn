@@ -1,0 +1,89 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scenes/game/main.gd" id="1_main"]
+[ext_resource type="Shader" path="res://shaders/neon_grid.gdshader" id="2_grid"]
+[ext_resource type="Script" path="res://scenes/chunks/LevelGenerator.gd" id="3_gen"]
+[ext_resource type="PackedScene" path="res://scenes/game/Ball.tscn" id="4_ball"]
+[ext_resource type="PackedScene" path="res://scenes/game/GameCamera.tscn" id="5_cam"]
+[ext_resource type="PackedScene" path="res://scenes/ui/HUD.tscn" id="6_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/GameOverOverlay.tscn" id="7_over"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PauseMenu.tscn" id="8_pause"]
+[ext_resource type="Script" path="res://scenes/game/ItemPlacer.gd" id="9_placer"]
+[ext_resource type="Texture2D" path="res://assets/background_mountain_farm.png" id="10_backdrop"]
+[ext_resource type="Script" path="res://scenes/chunks/ground_segment.gd" id="11_ground"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/KillPlane.tscn" id="12_kill"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_grid"]
+shader = ExtResource("2_grid")
+
+[sub_resource type="RectangleShape2D" id="RectangleShape_ceiling"]
+size = Vector2(3000, 52)
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_main")
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="Backdrop" type="TextureRect" parent="Background"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("10_backdrop")
+expand_mode = 1
+stretch_mode = 6
+mouse_filter = 2
+modulate = Color(1, 1, 1, 1)
+
+[node name="Grid" type="ColorRect" parent="Background"]
+material = SubResource("ShaderMaterial_grid")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0352941, 0.0431373, 0.0941176, 1)
+modulate = Color(1, 1, 1, 0)
+
+[node name="LevelGenerator" type="Node2D" parent="."]
+script = ExtResource("3_gen")
+ball_path = NodePath("../Ball")
+
+[node name="StartPlatform" type="StaticBody2D" parent="."]
+position = Vector2(-180, 460)
+script = ExtResource("11_ground")
+width = 1050.0
+thickness = 80.0
+
+[node name="Ceiling" type="StaticBody2D" parent="." groups=["ceiling"]]
+position = Vector2(-900, -30)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ceiling"]
+position = Vector2(1500, 26)
+shape = SubResource("RectangleShape_ceiling")
+
+[node name="Ball" parent="." instance=ExtResource("4_ball")]
+
+[node name="KillPlane" parent="." instance=ExtResource("12_kill")]
+target = NodePath("../Ball")
+
+[node name="Items" type="Node2D" parent="."]
+
+[node name="ItemPlacer" type="Node2D" parent="."]
+script = ExtResource("9_placer")
+ball_path = NodePath("../Ball")
+items_path = NodePath("../Items")
+
+[node name="GameCamera" parent="." instance=ExtResource("5_cam")]
+target = NodePath("../Ball")
+
+[node name="HUD" parent="." instance=ExtResource("6_hud")]
+
+[node name="GameOverOverlay" parent="." instance=ExtResource("7_over")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("8_pause")]

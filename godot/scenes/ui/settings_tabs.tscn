@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/menus/options_menu/master_options_menu_with_tabs.tscn" id="1_master"]
+[ext_resource type="PackedScene" path="res://scenes/ui/gameplay_options_menu.tscn" id="2_gameplay"]
+
+[node name="SettingsTabs" instance=ExtResource("1_master")]
+custom_minimum_size = Vector2(640, 380)
+current_tab = 0
+
+[node name="Gameplay" parent="." index="0" instance=ExtResource("2_gameplay")]
+layout_mode = 2
+metadata/_tab_index = 0

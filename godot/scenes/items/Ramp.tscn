@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/items/BaseItem.tscn" id="1_base"]
+[ext_resource type="Script" path="res://scenes/items/ramp.gd" id="2_ramp"]
+
+[node name="Ramp" groups=["item", "ramp"] instance=ExtResource("1_base")]
+script = ExtResource("2_ramp")
+size = Vector2(192, 82)
+color = Color(1, 0.819608, 0.4, 1)

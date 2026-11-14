@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/chunks/chunk.gd" id="1_chunk"]
+[ext_resource type="Script" path="res://scenes/chunks/ground_segment.gd" id="2_ground"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/StarPickup.tscn" id="3_star"]
+[ext_resource type="Texture2D" path="res://assets/sprites/lantern_post.png" id="4_lantern"]
+
+[node name="Chunk_Start" type="Node2D"]
+script = ExtResource("1_chunk")
+difficulty = 0.0
+weight = 0.3
+min_distance = 0
+bubble_chance = 0.15
+
+[node name="Ground1" type="StaticBody2D" parent="."]
+position = Vector2(0, 0)
+collision_mask = 0
+script = ExtResource("2_ground")
+width = 1200.0
+
+[node name="FirstStar" parent="." instance=ExtResource("3_star")]
+position = Vector2(800, -42)
+
+[node name="LanternPost" type="Sprite2D" parent="."]
+position = Vector2(1030, -88)
+texture = ExtResource("4_lantern")
+scale = Vector2(0.76, 0.76)
+z_index = -1
+
+[node name="ExitAnchor" type="Marker2D" parent="."]
+position = Vector2(1200, 0)

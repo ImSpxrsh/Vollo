@@ -1,0 +1,54 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/chunks/chunk.gd" id="1_chunk"]
+[ext_resource type="Script" path="res://scenes/chunks/ground_segment.gd" id="2_ground"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/PillarHazard.tscn" id="3_pillar"]
+[ext_resource type="PackedScene" path="res://scenes/obstacles/StarPickup.tscn" id="4_star"]
+[ext_resource type="Texture2D" path="res://assets/sprites/warning_sign.png" id="5_warning"]
+[ext_resource type="Texture2D" path="res://assets/sprites/suspension_bridge.png" id="6_bridge"]
+
+[node name="Chunk_DoublePit" type="Node2D"]
+script = ExtResource("1_chunk")
+difficulty = 0.4
+weight = 0.8
+min_distance = 120
+bubble_chance = 0.15
+
+[node name="Ground1" type="StaticBody2D" parent="."]
+position = Vector2(0, 0)
+collision_mask = 0
+script = ExtResource("2_ground")
+width = 480.0
+
+[node name="Ground2" type="StaticBody2D" parent="."]
+position = Vector2(660, 0)
+collision_mask = 0
+script = ExtResource("2_ground")
+width = 300.0
+
+[node name="Ground3" type="StaticBody2D" parent="."]
+position = Vector2(1150, 0)
+collision_mask = 0
+script = ExtResource("2_ground")
+width = 350.0
+
+[node name="FirstGapStar" parent="." instance=ExtResource("4_star")]
+position = Vector2(570, -170)
+
+[node name="MiddlePillar" parent="." instance=ExtResource("3_pillar")]
+position = Vector2(820, 0)
+
+[node name="PillarWarning" type="Sprite2D" parent="."]
+position = Vector2(540, -35)
+texture = ExtResource("5_warning")
+scale = Vector2(0.4, 0.4)
+z_index = 1
+
+[node name="CollapsedBridgeBelowRoad" type="Sprite2D" parent="."]
+position = Vector2(570, 105)
+texture = ExtResource("6_bridge")
+modulate = Color(0.7, 0.76, 0.82, 0.55)
+z_index = -2
+
+[node name="ExitAnchor" type="Marker2D" parent="."]
+position = Vector2(1500, 0)

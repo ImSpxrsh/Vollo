@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/items/BaseItem.tscn" id="1_base"]
+
+[node name="Wall" groups=["item", "wall"] instance=ExtResource("1_base")]
+size = Vector2(26, 192)
+color = Color(0.482353, 0.54902, 1, 1)

@@ -1,0 +1,107 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/gameplay_options_menu.gd" id="1_script"]
+[ext_resource type="Script" path="res://addons/maaacks_menus_template/base/nodes/utilities/capture_focus.gd" id="2_focus"]
+
+[node name="Gameplay" type="MarginContainer"]
+custom_minimum_size = Vector2(305, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_bottom = 24
+script = ExtResource("1_script")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 14
+alignment = 1
+script = ExtResource("2_focus")
+search_depth = 3
+
+[node name="ShakeRow" type="HBoxContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ShakeLabel" type="Label" parent="VBoxContainer/ShakeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Screen Shake :"
+vertical_alignment = 1
+
+[node name="ShakeSlider" type="HSlider" parent="VBoxContainer/ShakeRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_vertical = 4
+step = 5.0
+value = 100.0
+tick_count = 11
+ticks_on_borders = true
+
+[node name="ShakeValue" type="Label" parent="VBoxContainer/ShakeRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+theme_type_variation = &"BBAccent"
+text = "100 %"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="HitstopRow" type="HBoxContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="HitstopLabel" type="Label" parent="VBoxContainer/HitstopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Hitstop :"
+vertical_alignment = 1
+
+[node name="HitstopToggle" type="CheckButton" parent="VBoxContainer/HitstopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Brief freeze-frame on every trampoline bounce."
+button_pressed = true
+
+[node name="ContrastRow" type="HBoxContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="ContrastLabel" type="Label" parent="VBoxContainer/ContrastRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "High-contrast Hazards :"
+vertical_alignment = 1
+
+[node name="ContrastToggle" type="CheckButton" parent="VBoxContainer/ContrastRow"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Outline spikes and hazard towers with bold black and yellow stripes."
+
+[node name="MotionRow" type="HBoxContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="MotionLabel" type="Label" parent="VBoxContainer/MotionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Reduce Motion :"
+vertical_alignment = 1
+
+[node name="MotionToggle" type="CheckButton" parent="VBoxContainer/MotionRow"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "No screen shake or camera easing, and hazard glows stop pulsing."
+
+[node name="Hint" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"BBDim"
+text = "Lower screen shake if the camera feels too busy. Hitstop adds a tiny freeze on each bounce. High-contrast hazards and Reduce Motion help with colour vision and motion sensitivity."
+horizontal_alignment = 1
+autowrap_mode = 3
