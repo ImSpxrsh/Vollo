@@ -59,13 +59,17 @@ Run the tests from the repo root:
 - **Menus:** [Maaack's Godot Menus Template](https://github.com/Maaack/Godot-Menus-Template) (MIT)
 - **Engine:** [Godot Engine](https://godotengine.org) (MIT)
 
-## Art resources and free alternatives
 
-Free assets that look like VOLL's art. Use them to replace the images found online, or as references.
-Licences are as listed on each page in November 2026; check the page before using an asset.
-(CC0 = public domain, no credit required. CC BY = credit the artist.)
+We would like to thank Kenny.nl for providing assets, aswell as Andrew Shah for drawing all other assets
 
-### Smiley balls and faces
+
+Backgrounds... 
+
+https://c4.wallpaperflare.com/wallpaper/91/36/840/stardew-valley-digital-art-chickens-night-daylight-hd-wallpaper-preview.jpg 
+https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRM9gVQDYBI0T5xotgybOJadZQxK-RIaLGh3hd0H4-X7-vQH9owy7rhY2w&s=10
+https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBY1z-zqHebrE63rLCDS0JDK_3CUUZ664y9qK5NwjHVw&s=10
+https://wallpapers.com/images/hd/2d-farm-of-stardew-valley-zjvtjx1huj3uhdbi.jpg
+
 
 - [Rhos Vector Emojis](https://rhosgfx.itch.io/vector-emojis) (CC0)
 - [49Wolf Smileys Pack 1](https://49wolf.itch.io/smileys-pack-1) (CC0)
@@ -81,15 +85,12 @@ Licences are as listed on each page in November 2026; check the page before usin
 - [OpenMoji](https://openmoji.org/faq) (CC BY-SA 4.0)
 - [OpenGameArt emoji collection](https://opengameart.org/content/emojis)
 
-### Trampoline, ramp, floor, spikes, coins
-
 - [Kenney Platformer Pack Redux](https://kenney.nl/assets/platformer-pack-redux) (CC0)
 - [Kenney New Platformer Pack](https://kenney.nl/assets/new-platformer-pack) (CC0)
 - [Kenney Jumper Pack](https://kenney.nl/assets/jumper-pack) (CC0)
 - [Kenney Platformer Art Deluxe](https://kenney.nl/assets/platformer-art-deluxe) (CC0)
 - [Cartoon 16×16 Platformer Pack](https://doughnutdev.itch.io/platformer-assetpack) (not CC0, check page)
 
-### Keycaps and control prompts
 
 - [Mr. Breakfast's Free Prompts](https://mrbreakfastsdelight.itch.io/mr-breakfasts-free-prompts) (CC0)
 - [Kenney Input Prompts](https://kenney-assets.itch.io/input-prompts) (check page)
@@ -99,29 +100,9 @@ Licences are as listed on each page in November 2026; check the page before usin
 - [PrototypeGames 16×16 Input Prompts](https://prototypegames.itch.io/16x16-input-prompts) (CC0)
 - [Simple Keyboard Input Prompts](https://pixel-3d-x.itch.io/simple-keyboard-input-prompts) (CC0)
 
-### Level backgrounds
 
-- [Free Mountain Peak Pixel Art Backgrounds](https://free-game-assets.itch.io/free-mountain-peak-pixel-art-backgrounds) (check page)
-- [4 Free Seamless Nature Pixel Backgrounds](https://free-game-assets.itch.io/4-free-seamless-nature-pixel-backgrounds) (check page)
-- [Nature Landscapes Free Pixel Art](https://free-game-assets.itch.io/nature-landscapes-free-pixel-art) (check page)
-- [Free Cartoon Forest 2D Backgrounds](https://free-game-assets.itch.io/free-cartoon-forest-2d-backgrounds) (check page)
-- [Free Fairy-Tale 2D Backgrounds](https://free-game-assets.itch.io/free-fairy-tale-2d-backgrounds) (check page)
-- [Pixel Art Mountains Parallax](https://dustdfg.itch.io/pixel-art-mountains-parallax) (CC0)
-- [Free Pixel Art Mountains Tileset and Backgrounds](https://karsiori.itch.io/free-pixel-art-mountains-tileset-and-backgrounds) (check page)
-- [Free Pixel Art Woods Tileset and Background](https://karsiori.itch.io/woods-tileset-and-background) (CC0)
-- [Scenery: The Woods](https://opengameart.org/content/scenery-the-woods) (CC0)
-- ["House On The Mountains" background](https://pixel-1992.itch.io/free-pixel-art-house-on-the-mountains) (check page)
-- ["Deep Forest" side-scroller background](https://pixel-1992.itch.io/free-pixel-art-side-scroller) (check page)
-- [Free 2D Cartoon Forest Backgrounds (TBWorks)](https://tbworks.itch.io/free-2d-cartoon-forest-backgrounds-for-platformer-games-png-psd-assets-royalty-f) (no attribution required)
-- [Large-scale Pixel Cottage pack](https://studiodenny.itch.io/large-scale-pixel-forest-asset-pack) (custom licence: OK in games, no reselling)
-- [Pine Hills Background](https://myaumya.itch.io/pine-hills-background) (check page)
-- [Parallax Mountain Background](https://bearbreath.itch.io/parallax-mountain-background) (check page)
-
-### Browse more
 
 - [itch.io CC0 sprites](https://itch.io/game-assets/tag-cc0/tag-sprites)
 - [itch.io CC0 pixel art](https://itch.io/game-assets/tag-cc0/tag-pixel-art)
 - [Kenney assets (all CC0)](https://kenney.nl/assets)
 
-To find who made an image you got from Google, use a reverse image search ([Google Lens](https://lens.google.com) or
-[TinEye](https://tineye.com)), then credit the artist above and in the in-game credits.
