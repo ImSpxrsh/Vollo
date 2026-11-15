@@ -42,6 +42,8 @@ func _ready() -> void:
 	add_child(_fog)
 	GameManager.level_changed.connect(_on_level_changed)
 	GameManager.versus = false
+	if not GameManager.ghost_replay.is_empty() and not GameManager.is_custom_run():
+		_setup_ghost_race()
 	GameManager.start_run()
 	if GameManager.tutorial:
 		var overlay := CanvasLayer.new()
@@ -56,6 +58,16 @@ func _ready() -> void:
 		var who := Leaderboard.username if Leaderboard.is_logged_in() else "YOU"
 		var mode := "map" if GameManager.is_custom_run() else "solo"
 		recorder.setup([ball], $LevelGenerator, mode, [who])
+
+## Rebuilds the course from the ghost replay's seed and adds the ghost ball.
+func _setup_ghost_race() -> void:
+	var gen := $LevelGenerator
+	gen.call("seed_rng", int(GameManager.ghost_replay.seed))
+	gen.call("reset")
+	var ghost := GhostRacer.new()
+	ghost.name = "Ghost"
+	add_child(ghost)
+	ghost.setup(GameManager.ghost_replay)
 
 func _setup_background_crossfade() -> void:
 	_next_backdrop = TextureRect.new()
