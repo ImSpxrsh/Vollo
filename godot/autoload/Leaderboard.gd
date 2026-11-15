@@ -15,7 +15,10 @@ const ERRORS := {
 	"bad_login": "Wrong name or password",
 	"bad_token": "Signed out, please log in again",
 	"bad_score": "Score rejected",
+	"bad_progress": "Progress rejected",
 }
+## Seconds to wait after a save before uploading progress (batches quick saves).
+const SYNC_DELAY := 3.0
 
 var server_url := SERVER_URL
 var server_key := SERVER_KEY
@@ -23,6 +26,11 @@ var token := ""
 var username := ""
 var online_best := 0
 var online_rank := 0
+## True once this device has downloaded and merged the account's progress.
+## Nothing is uploaded before that, so a fresh device can't wipe the account.
+var progress_synced := false
+var _applying_progress := false
+var _sync_timer: Timer
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -30,10 +38,54 @@ func _ready() -> void:
 	if not env_url.is_empty():
 		server_url = env_url
 		server_key = OS.get_environment("VOLL_LEADERBOARD_KEY")
+	if _is_test_run():
+		# Never post scores or upload test progress to a real account.
+		server_url = ""
+	_sync_timer = Timer.new()
+	_sync_timer.one_shot = true
+	_sync_timer.timeout.connect(push_progress)
+	add_child(_sync_timer)
 	_load_account()
 	GameManager.run_over.connect(_on_run_over)
+	SaveManager.progress_saved.connect(_on_progress_saved)
 	if is_logged_in():
-		refresh_me()
+		_startup_sync()
+
+static func _is_test_run() -> bool:
+	var loop := Engine.get_main_loop()
+	var script: Script = loop.get_script() if loop else null
+	return script != null and script.resource_path.ends_with("tests/run_tests.gd")
+
+func _startup_sync() -> void:
+	await refresh_me()
+	if is_logged_in():
+		await sync_progress()
+
+## Downloads the account's progress, merges it into this device, then uploads
+## the merged result. Quietly does nothing if the server has no progress table.
+func sync_progress() -> Dictionary:
+	if not is_logged_in():
+		return {"ok": false, "error": "Not logged in"}
+	var res := await _rpc("voll_get_progress", {"p_token": token})
+	if not res.ok:
+		if res.get("code", "") == "bad_token":
+			logout()
+		return res
+	if typeof(res.data) == TYPE_DICTIONARY:
+		_applying_progress = true
+		SaveManager.merge_progress(res.data)
+		_applying_progress = false
+	progress_synced = true
+	return await push_progress()
+
+func push_progress() -> Dictionary:
+	if not is_logged_in() or not progress_synced:
+		return {"ok": false, "error": "Not synced"}
+	return await _rpc("voll_put_progress", {"p_token": token, "p_progress": SaveManager.progress_snapshot()})
+
+func _on_progress_saved() -> void:
+	if is_logged_in() and progress_synced and not _applying_progress:
+		_sync_timer.start(SYNC_DELAY)
 
 func is_configured() -> bool:
 	return not server_url.is_empty()
@@ -56,6 +108,9 @@ func logout() -> void:
 	username = ""
 	online_best = 0
 	online_rank = 0
+	progress_synced = false
+	if _sync_timer:
+		_sync_timer.stop()
 	_save_account()
 	account_changed.emit()
 
@@ -82,6 +137,7 @@ func _after_login(res: Dictionary) -> Dictionary:
 	if not res.ok:
 		return res
 	_apply_profile(res)
+	await sync_progress()
 	if SaveManager.high_score > online_best:
 		await submit(SaveManager.high_score)
 	return res

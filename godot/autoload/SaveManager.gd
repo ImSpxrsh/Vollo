@@ -3,6 +3,8 @@ extends Node
 signal settings_changed
 signal variety_unlocked(variety_id: String, display_name: String)
 signal award_earned(award_id: String, award_name: String, variety_id: String)
+## Emitted after every save to disk; the account sync uploads a moment later.
+signal progress_saved
 
 const SAVE_PATH := "user://save_data.cfg"
 const UPGRADES := [
@@ -278,6 +280,62 @@ func save_data() -> void:
 	cfg.set_value("settings", "music_volume", music_volume)
 	cfg.set_value("settings", "fullscreen", fullscreen)
 	cfg.save(SAVE_PATH)
+	progress_saved.emit()
+
+## Progress that follows your account between devices. Settings stay per device.
+func progress_snapshot() -> Dictionary:
+	return {
+		"v": 1,
+		"high_score": high_score,
+		"total_bounces": total_bounces,
+		"total_stars": total_stars,
+		"coins_spent": coins_spent,
+		"stats": stats.duplicate(),
+		"earned_awards": earned_awards.duplicate(),
+		"upgrades": upgrades.duplicate(),
+		"unlocked_varieties": unlocked_varieties.duplicate(),
+		"selected_variety": selected_variety,
+	}
+
+## Merges account progress into this device: counters keep the larger value,
+## upgrades / varieties / awards are combined. Returns true if anything changed.
+func merge_progress(cloud: Dictionary) -> bool:
+	if cloud.is_empty():
+		return false
+	var before := JSON.stringify(progress_snapshot())
+	high_score = maxi(high_score, int(cloud.get("high_score", 0)))
+	total_bounces = maxi(total_bounces, int(cloud.get("total_bounces", 0)))
+	total_stars = maxi(total_stars, int(cloud.get("total_stars", 0)))
+	coins_spent = maxi(coins_spent, int(cloud.get("coins_spent", 0)))
+	var cloud_stats: Variant = cloud.get("stats", {})
+	if cloud_stats is Dictionary:
+		for key: String in STAT_KEYS:
+			stats[key] = maxi(int(stats.get(key, 0)), int((cloud_stats as Dictionary).get(key, 0)))
+	stats.total_bounces = total_bounces
+	stats.total_coins = total_stars
+	for id: Variant in cloud.get("earned_awards", []):
+		if not get_award(String(id)).is_empty() and not earned_awards.has(String(id)):
+			earned_awards.append(String(id))
+	for id: Variant in cloud.get("upgrades", []):
+		if not get_upgrade(String(id)).is_empty() and not upgrades.has(String(id)):
+			upgrades.append(String(id))
+	for id: Variant in cloud.get("unlocked_varieties", []):
+		if _is_variety(String(id)) and not unlocked_varieties.has(String(id)):
+			unlocked_varieties.append(String(id))
+	var picked := String(cloud.get("selected_variety", ""))
+	if selected_variety == "yellow" and unlocked_varieties.has(picked):
+		selected_variety = picked
+	var changed := JSON.stringify(progress_snapshot()) != before
+	if changed:
+		save_data()
+		settings_changed.emit()
+	return changed
+
+func _is_variety(variety_id: String) -> bool:
+	for v: Dictionary in VARIETIES:
+		if String(v.id) == variety_id:
+			return true
+	return false
 
 func load_data() -> void:
 	var cfg := ConfigFile.new()
