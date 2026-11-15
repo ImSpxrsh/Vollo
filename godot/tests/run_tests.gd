@@ -644,32 +644,60 @@ func test_tutorial_holds_time() -> String:
 	var mistakes := [0]
 	_gm().tutorial_mistake.connect(func() -> void: mistakes[0] += 1)
 	var froze := 0
+	var slowed := false
+	var refused := false
 	var next_floor := 0.0
 	var f := 0
-	while _gm().state != _gm().State.GAME_OVER and f < 60 * 90:
+	while _gm().state != _gm().State.GAME_OVER and f < 60 * 240:
 		await process_frame
 		f += 1
 		var l: Dictionary = tut.current()
-		if tut.frozen:
+		if l.get("keys", false) and not tut._completed:
+			if Engine.time_scale > 0.01:
+				return "welcome lesson should stop time until 1/2/3 are tried"
+			for i in 3:
+				_gm().select_item(i)
+			continue
+		if tut.has_pending_step() and not tut.frozen and Engine.time_scale > 0.05 and Engine.time_scale < 0.5:
+			slowed = true
+		if tut.frozen and tut.has_pending_step():
 			if Engine.time_scale > 0.01:
 				return "frozen lesson did not stop time (scale %s)" % Engine.time_scale
 			froze += 1
-			_gm().select_item(int(l.item))
-			placer.place_at(l.targets[tut.target])
-		elif l.get("free", false) and not tut._completed:
+			var s: Dictionary = tut.current_step()
+			if not refused:
+				var before: int = tut.step
+				_gm().select_item((int(s.item) + 1) % 3)
+				if placer.place_at(s.pos) or tut.step != before:
+					return "the tutorial accepted the wrong piece"
+				refused = true
+			_gm().select_item(int(s.item))
+			if int(s.item) == 1 and _gm().player(0).ramp_flipped != bool(s.get("flip", false)):
+				_gm().flip_ramp()
+			# Slightly off target: the gate should snap it onto the glowing spot.
+			if not placer.place_at(s.pos + Vector2(30, -20)):
+				return "could not build the glowing %s at %s" % [_gm().ITEM_NAMES[int(s.item)], s.pos]
+		elif l.get("free", false) and not tut._completed and String(l.title) != "FINISH":
 			_gm().select_item(2)
 			var bx := _ball().global_position.x
 			next_floor = maxf(next_floor, bx + 160.0)
 			if next_floor < bx + 420.0 and _gm().player(0).is_ready(2) and placer.place_at(Vector2(next_floor, 471)):
 				next_floor += 205.0
-	if froze < 5:
+	if froze < 12:
 		return "tutorial only froze %d times" % froze
+	if not slowed:
+		return "lessons never slowed time down before freezing"
 	if mistakes[0] > 0:
 		return "following the glowing spots still caused %d mistakes" % mistakes[0]
 	if not _gm().cleared:
 		return "tutorial not finished (x=%d)" % int(_ball().global_position.x)
 	if _gm().player(0).stomps < 1:
 		return "stomp lesson did not stomp"
+	if _gm().player(0).best_combo < 2:
+		return "clutch lesson did not build a combo"
+	for obj: Dictionary in MapStore.TUTORIAL.objects:
+		if String(obj.k) == "ground":
+			return "the tutorial should have no ground, like a real run"
 	return ""
 
 func test_tutorial_mistake_rewinds() -> String:
@@ -681,13 +709,21 @@ func test_tutorial_mistake_rewinds() -> String:
 	_ball().teleport(Vector2(1500, 428))
 	await _frames(30)
 	var hp: int = _gm().health
+	var active: int = tut.lesson
+	if active < 1:
+		return "teleporting ahead should have started a lesson (lesson %d)" % active
 	_ball()._invuln_left = 0.0
 	_ball().kill()
 	await _frames(3)
 	if _gm().health != hp:
 		return "tutorial hits should not cost hearts"
-	if absf(_ball().global_position.x - float(MapStore.TUTORIAL_LESSONS[tut.lesson + 1].cp)) > 40.0:
+	if absf(_ball().global_position.x - float(MapStore.TUTORIAL_LESSONS[active].cp)) > 40.0:
 		return "mistake did not rewind to the lesson start (x=%d)" % int(_ball().global_position.x)
+	await _frames(20)
+	if tut.lesson != active:
+		return "rewind restarted lesson %d instead of %d" % [tut.lesson, active]
+	if _ball().global_position.y > 470.0:
+		return "ball fell through the checkpoint after rewinding (y=%d)" % int(_ball().global_position.y)
 	return ""
 
 func test_replay_roundtrip() -> String:
