@@ -22,6 +22,7 @@ func _run() -> void:
 		"test_hazard_ends_run",
 		"test_shield_absorbs_hit",
 		"test_pause_resume",
+		"test_hotbar_toggle",
 		"test_menu_instantiates",
 		"test_guided_levels_are_fixed",
 		"test_random_levels_after_guided",
@@ -270,6 +271,48 @@ func test_pause_resume() -> String:
 		return "pause failed"
 	_gm().resume()
 	return "" if _gm().state == 1 and not paused else "resume failed"
+
+func _press_key(code: Key) -> void:
+	for down in [true, false]:
+		var ev := InputEventKey.new()
+		ev.keycode = code
+		ev.physical_keycode = code
+		ev.pressed = down
+		ev.shift_pressed = down and code == KEY_SHIFT
+		Input.parse_input_event(ev)
+		await process_frame
+		await process_frame
+
+func test_hotbar_toggle() -> String:
+	_sm().hotbar_hidden = false
+	await _start_main()
+	await _frames(2)
+	var shift_bound := false
+	for ev in InputMap.action_get_events("toggle_hotbar"):
+		if ev is InputEventKey and (ev as InputEventKey).physical_keycode == KEY_SHIFT:
+			shift_bound = true
+	if not shift_bound:
+		return "toggle_hotbar is not bound to Shift by default"
+	var hotbar: Control = _main.get_node("HUD").get("hotbar")
+	if not hotbar.visible:
+		return "hotbar should start visible"
+	await _press_key(KEY_SHIFT)
+	if hotbar.visible or not _sm().hotbar_hidden:
+		return "Shift did not hide the hotbar"
+	var cfg := ConfigFile.new()
+	cfg.load(_sm().SAVE_PATH)
+	if not bool(cfg.get_value("settings", "hotbar_hidden", false)):
+		return "hidden hotbar was not saved"
+	await _press_key(KEY_SHIFT)
+	if not hotbar.visible or _sm().hotbar_hidden:
+		return "Shift did not bring the hotbar back"
+	var controls: Node = load("res://scenes/menus/options_menu/input/input_options_menu.tscn").instantiate()
+	var list: Node = controls.get_node("VBoxContainer/InputMappingContainer/InputActionsList")
+	var listed: bool = (list.get("input_action_names") as Array).has(&"toggle_hotbar")
+	controls.free()
+	if not listed:
+		return "Hide Hotbar is missing from the Controls settings"
+	return ""
 
 func test_menu_instantiates() -> String:
 	var menu: Node = load("res://scenes/ui/MainMenu.tscn").instantiate()
