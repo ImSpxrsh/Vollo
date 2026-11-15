@@ -57,6 +57,7 @@ var screen_shake_intensity := 1.0
 var hitstop_enabled := true
 var high_contrast_hazards := false
 var reduce_motion := false
+var hotbar_hidden := false
 
 var master_volume: float:
 	get: return _bus_volume("Master")
@@ -250,6 +251,11 @@ func set_accessibility_settings(high_contrast: bool, reduced_motion: bool) -> vo
 	save_data()
 	settings_changed.emit()
 
+func set_hotbar_hidden(hidden: bool) -> void:
+	hotbar_hidden = hidden
+	save_data()
+	settings_changed.emit()
+
 func save_data() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("progress", "high_score", high_score)
@@ -266,6 +272,7 @@ func save_data() -> void:
 	cfg.set_value("settings", "hitstop_enabled", hitstop_enabled)
 	cfg.set_value("settings", "high_contrast_hazards", high_contrast_hazards)
 	cfg.set_value("settings", "reduce_motion", reduce_motion)
+	cfg.set_value("settings", "hotbar_hidden", hotbar_hidden)
 	cfg.set_value("settings", "master_volume", master_volume)
 	cfg.set_value("settings", "sfx_volume", sfx_volume)
 	cfg.set_value("settings", "music_volume", music_volume)
@@ -306,6 +313,7 @@ func load_data() -> void:
 	hitstop_enabled = bool(cfg.get_value("settings", "hitstop_enabled", true))
 	high_contrast_hazards = bool(cfg.get_value("settings", "high_contrast_hazards", false))
 	reduce_motion = bool(cfg.get_value("settings", "reduce_motion", false))
+	hotbar_hidden = bool(cfg.get_value("settings", "hotbar_hidden", false))
 
 func reset_progress() -> void:
 	high_score = 0
