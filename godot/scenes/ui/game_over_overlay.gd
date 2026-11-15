@@ -47,7 +47,8 @@ func _ready() -> void:
 	var cap := UiArt.load_texture(UiArt.KEYCAP_SPACE)
 	space_cap.texture = cap
 	space_cap.visible = cap != null
-	header_label.text = "CRASHED"
+	header_label.text = "OUT OF BOUNCE!"
+	_style_header()
 	_awards_label = Label.new()
 	_awards_label.name = "AwardsLabel"
 	_awards_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -71,7 +72,19 @@ func _ready() -> void:
 	if GameManager.map_from_builder:
 		main_menu_button.text = "Back to Builder"
 	_best_before_run = SaveManager.high_score
-	_apply_header_art()
+
+## Warm farm-style header and readable verdict, matching the VOLL title on the
+## menu (the old slate "GAME OVER" banner clashed with the wooden panel).
+func _style_header() -> void:
+	header_label.visible = true
+	header_label.add_theme_font_size_override("font_size", 44)
+	header_label.add_theme_color_override("font_color", Color("7A3510"))
+	header_label.add_theme_color_override("font_outline_color", Color("FFD98A"))
+	header_label.add_theme_constant_override("outline_size", 10)
+	header_label.add_theme_color_override("font_shadow_color", Color(0.35, 0.14, 0.03, 0.55))
+	header_label.add_theme_constant_override("shadow_offset_x", 0)
+	header_label.add_theme_constant_override("shadow_offset_y", 4)
+	verdict_label.add_theme_color_override("font_color", Color("A8471A"))
 
 func _small_label(node_name: String, color: Color) -> Label:
 	var l := Label.new()
@@ -82,25 +95,6 @@ func _small_label(node_name: String, color: Color) -> Label:
 	l.add_theme_color_override("font_color", color)
 	l.visible = false
 	return l
-
-func _apply_header_art() -> void:
-	var tex := UiArt.load_texture(UiArt.GAME_OVER_PANEL)
-	if tex == null:
-		return
-	var k := tex.get_size() / Vector2(262.0, 176.0)
-	var atlas := AtlasTexture.new()
-	atlas.atlas = tex
-	atlas.region = Rect2(Vector2(30, 24) * k, Vector2(202, 30) * k)
-	var header_art := TextureRect.new()
-	header_art.name = "HeaderArt"
-	header_art.texture = atlas
-	header_art.custom_minimum_size = Vector2(0, 52)
-	header_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	header_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	header_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	header_label.add_sibling(header_art)
-	header_label.visible = false
-	_header_art = header_art
 
 func _on_run_over(distance: int, best: int, is_new_best: bool, bounces: int) -> void:
 	last_distance = distance
@@ -144,7 +138,7 @@ func _apply_course_header() -> void:
 		header_label.text = "TUTORIAL COMPLETE!" if GameManager.tutorial else "COURSE CLEAR!"
 		_progress_label.text = "You're ready for the real thing. Press PLAY on the menu!" if GameManager.tutorial else "You beat %s." % String(GameManager.custom_map.get("name", "this map"))
 	else:
-		header_label.text = "CRASHED"
+		header_label.text = "OUT OF BOUNCE!"
 		_progress_label.text = "Map: %s" % String(GameManager.custom_map.get("name", "custom"))
 	_progress_label.visible = true
 
@@ -246,14 +240,14 @@ func _set_distance_text(v: float) -> void:
 
 func _run_verdict() -> String:
 	if last_new_best:
-		return "NEW GROUND. NOW GO FURTHER."
+		return "FRESH FIELDS! VOLL HAS NEVER ROLLED THIS FAR."
 	if last_distance < 20:
-		return "BUILD CLOSE. BUILD LATE. TRY AGAIN."
+		return "BUILD AHEAD OF VOLL, NOT UNDER IT."
 	if last_bounces < 2:
-		return "TRAMPOLINES BUY YOU TIME."
+		return "A TRAMPOLINE KEEPS VOLL SMILING."
 	if last_distance >= maxi(1, int(last_best * 0.85)):
-		return "SO CLOSE. ONE MORE RUN."
-	return "EVERY CRASH TEACHES THE NEXT PATH."
+		return "SO CLOSE TO HOME. ONE MORE ROLL!"
+	return "EVERY TUMBLE MAPS THE NEXT PATH."
 
 func _stop_loops() -> void:
 	if _badge_tween and _badge_tween.is_valid():
