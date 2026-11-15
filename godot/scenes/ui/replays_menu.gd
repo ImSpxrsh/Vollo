@@ -49,7 +49,7 @@ func _build() -> void:
 	root.add_theme_constant_override("separation", 12)
 	panel.add_child(root)
 	root.add_child(_label("REPLAYS", 38, C_GOLD))
-	root.add_child(_label("Your last %d runs and matches are saved here automatically." % ReplayStore.KEEP, 15, WorldConst.C_DIM))
+	root.add_child(_label("Your last %d runs and matches are saved here automatically. RACE a solo run to play its course against your ghost." % ReplayStore.KEEP, 15, WorldConst.C_DIM))
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -115,6 +115,16 @@ func _make_row(data: Dictionary) -> Control:
 		AudioManager.play("go")
 		GameManager.watch_replay(data))
 	h.add_child(watch)
+	if GameManager.can_race(data):
+		var race := Button.new()
+		race.name = "Race"
+		race.text = "RACE"
+		race.tooltip_text = "Play the same course with this run as a ghost"
+		race.custom_minimum_size = Vector2(100, 44)
+		race.pressed.connect(func() -> void:
+			AudioManager.play("go")
+			GameManager.race_ghost(data))
+		h.add_child(race)
 	var del := Button.new()
 	del.name = "Delete"
 	del.text = "DELETE"

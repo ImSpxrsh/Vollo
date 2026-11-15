@@ -30,6 +30,7 @@ var _awards_label: Label
 var _progress_label: Label
 var _online_label: Label
 var _replay_button: Button
+var _race_button: Button
 var _header_art: Control
 var _best_before_run := 0
 var _hint_tween: Tween
@@ -68,7 +69,19 @@ func _ready() -> void:
 	_replay_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_replay_button.theme_type_variation = &"BBGhostButton"
 	_replay_button.pressed.connect(watch_replay)
-	main_menu_button.add_sibling(_replay_button)
+	var replay_row := HBoxContainer.new()
+	replay_row.name = "ReplayRow"
+	replay_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	replay_row.add_theme_constant_override("separation", 12)
+	main_menu_button.add_sibling(replay_row)
+	replay_row.add_child(_replay_button)
+	_race_button = Button.new()
+	_race_button.name = "RaceButton"
+	_race_button.text = "Race This Run"
+	_race_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_race_button.theme_type_variation = &"BBGhostButton"
+	_race_button.pressed.connect(race_this_run)
+	replay_row.add_child(_race_button)
 	if GameManager.map_from_builder:
 		main_menu_button.text = "Back to Builder"
 	_best_before_run = SaveManager.high_score
@@ -120,6 +133,7 @@ func _on_run_over(distance: int, best: int, is_new_best: bool, bounces: int) -> 
 	_online_label.visible = not _online_label.text.is_empty()
 	_apply_course_header()
 	_replay_button.visible = not GameManager.tutorial
+	_race_button.visible = not GameManager.is_custom_run() and not GameManager.versus
 	show_results()
 
 func _best_delta_text(distance: int, best: int, is_new_best: bool) -> String:
@@ -156,6 +170,19 @@ func watch_replay() -> void:
 	_leaving = true
 	AudioManager.play("click")
 	GameManager.watch_replay(data)
+
+## Replays the course of the run that just ended, with that run as a ghost.
+func race_this_run() -> void:
+	if not shown or _leaving:
+		return
+	var rec: Variant = get_tree().current_scene.get("recorder") if get_tree().current_scene else null
+	var data := ReplayStore.load_replay(String(rec.last_path)) if rec != null and not String(rec.last_path).is_empty() else {}
+	if not GameManager.can_race(data):
+		AudioManager.play("deny")
+		return
+	_leaving = true
+	AudioManager.play("go")
+	GameManager.race_ghost(data)
 
 func _online_text(distance: int) -> String:
 	if GameManager.is_custom_run():
