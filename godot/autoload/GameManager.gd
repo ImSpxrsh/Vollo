@@ -65,6 +65,8 @@ var input_locked := false
 ## Called as (item, world_pos, preview) and returns the position to build at,
 ## or null to refuse the placement.
 var placement_filter := Callable()
+## A saved solo replay to race as a ghost in the next normal run (empty = off).
+var ghost_replay: Dictionary = {}
 
 var _hitstop_id := 0
 var speed_mult := 1
@@ -178,6 +180,7 @@ func start_run() -> void:
 		players[i].emit_all()
 
 func start_versus(variety_a: String, variety_b: String, bot := false, difficulty := 1, watch := false) -> void:
+	ghost_replay = {}
 	versus = true
 	versus_bot = bot or watch
 	versus_watch = watch
@@ -228,7 +231,28 @@ func finish_course() -> void:
 	course_cleared.emit()
 	end_run(0)
 
+## Starts a normal (infinite) run on the same course as `replay`, with the old
+## run playing alongside as a ghost. Only solo replays can be raced.
+func race_ghost(replay: Dictionary) -> void:
+	if not can_race(replay):
+		return
+	ghost_replay = replay
+	custom_map = {}
+	tutorial = false
+	map_from_builder = false
+	versus = false
+	versus_bot = false
+	versus_watch = false
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	SceneTransition.change_scene(MAIN_SCENE)
+
+static func can_race(replay: Dictionary) -> bool:
+	return String(replay.get("mode", "")) == "solo" and (replay.get("map", {}) as Dictionary).is_empty() \
+		and int(replay.get("seed", 0)) != 0 and (replay.get("frames", []) as Array).size() > 1
+
 func play_map(map: Dictionary, from_builder := false, is_tutorial := false) -> void:
+	ghost_replay = {}
 	custom_map = map.duplicate(true)
 	map_from_builder = from_builder
 	tutorial = is_tutorial
@@ -240,6 +264,7 @@ func play_map(map: Dictionary, from_builder := false, is_tutorial := false) -> v
 	SceneTransition.change_scene(MAIN_SCENE)
 
 func watch_replay(data: Dictionary) -> void:
+	ghost_replay = {}
 	ReplayStore.pending = data
 	get_tree().paused = false
 	Engine.time_scale = 1.0
@@ -251,6 +276,7 @@ func open_builder() -> void:
 	get_tree().paused = false
 	Engine.time_scale = 1.0
 	custom_map = {}
+	ghost_replay = {}
 	tutorial = false
 	versus = false
 	_set_state(State.MENU)
@@ -321,6 +347,7 @@ func go_to_menu() -> void:
 	versus_bot = false
 	versus_watch = false
 	input_locked = false
+	ghost_replay = {}
 	if map_from_builder and not custom_map.is_empty():
 		var back := custom_map
 		map_from_builder = false
