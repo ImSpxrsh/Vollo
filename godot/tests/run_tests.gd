@@ -75,16 +75,16 @@ func _backup_save() -> void:
 func _restore_save() -> void:
 	var save := root.get_node("SaveManager")
 	var path: String = save.SAVE_PATH
+	# reset_progress() writes a blank save to disk, so it must run BEFORE the
+	# player's real save is put back, never after (that used to wipe it).
+	save.reset_progress()
 	if _save_backup is PackedByteArray:
 		var f := FileAccess.open(path, FileAccess.WRITE)
 		f.store_buffer(_save_backup)
 		f.close()
 	elif FileAccess.file_exists(path):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
-	save.reset_progress()
 	save.load_data()
-	if _save_backup == null and FileAccess.file_exists(path):
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 func _sm() -> Node:
 	return root.get_node("SaveManager")
@@ -262,6 +262,10 @@ func test_shield_absorbs_hit() -> String:
 	await _frames(2)
 	if _ball().has_shield:
 		return "shield was not consumed"
+	if _gm().health != _gm().max_health:
+		return "losing the shield cost a heart"
+	if _ball().collision_mask & 4:
+		return "ball should ghost through walls after losing its shield"
 	return "" if _gm().state == 1 else "shield did not keep the run alive"
 
 func test_pause_resume() -> String:
