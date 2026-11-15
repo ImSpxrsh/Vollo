@@ -242,6 +242,8 @@ func _add_tag(ball: Node2D, i: int) -> void:
 	tag.position = Vector2(-18, -82)
 	tag.z_index = 15
 	ball.add_child(tag)
+	# Only on this player's own half: the other half sees just a faint ghost.
+	tag.visibility_layer = WorldConst.VISIBILITY_PRIVATE[i]
 
 func _process(_delta: float) -> void:
 	if balls.size() < 2:

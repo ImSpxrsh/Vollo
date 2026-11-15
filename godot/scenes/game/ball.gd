@@ -12,7 +12,6 @@ const ACCELERATION := 7.0
 const FALL_LIMIT_Y := 760.0
 const TRAMPOLINE_VELOCITY := -650.0
 const RAMP_UP_VELOCITY := -390.0
-const INVULN_TIME := 0.75
 const TRAIL_POINTS := 24
 const SUNNY := Color("FFD84A")
 const SHIELDED := Color("4CC9FF")
@@ -404,11 +403,13 @@ func _use_ceiling() -> void:
 
 func _consume_shield() -> void:
 	has_shield = false
-	_invuln_left = INVULN_TIME
+	# Same as a hit, minus the heart: no bounce, just ghost through whatever
+	# popped the shield (red walls included) while blinking.
+	_invuln_left = HIT_INVULN
+	_ghost_left = HIT_INVULN
+	_set_ghost(true)
 	shield_changed.emit(false)
 	GameManager.register_shield_save(player_index)
-	_pending_vy = -520.0
-	linear_velocity.y = -520.0
 	_burst(global_position, SHIELDED, 30, 360.0, 0.55, true)
 	GameManager.add_trauma(0.38)
 	AudioManager.play("pickup")
