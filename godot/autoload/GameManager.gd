@@ -61,6 +61,10 @@ const BUILDER_SCENE := "res://scenes/ui/MapBuilder.tscn"
 const REPLAY_SCENE := "res://scenes/game/replay_player.tscn"
 const BOT_NAMES := ["EASY", "NORMAL", "HARD", "EXTREME"]
 var input_locked := false
+## Optional gate for player 0's placements (used by the tutorial).
+## Called as (item, world_pos, preview) and returns the position to build at,
+## or null to refuse the placement.
+var placement_filter := Callable()
 
 var _hitstop_id := 0
 var speed_mult := 1
@@ -157,6 +161,7 @@ func start_run() -> void:
 	slowmo_left = 0.0
 	cleared = false
 	time_hold = 1.0
+	placement_filter = Callable()
 	if not versus and not is_custom_run():
 		SaveManager.begin_run()
 	var hearts := MAX_HEALTH + (1 if SaveManager.has_upgrade("extra_heart") and not versus and not is_custom_run() else 0)
@@ -387,7 +392,7 @@ func start_slowmo() -> void:
 		return
 	var was_active := slowmo_left > 0.0
 	slowmo_left = SLOWMO_TIME
-	Engine.time_scale = SLOWMO_SCALE * speed_mult
+	Engine.time_scale = base_time_scale()
 	if not was_active:
 		slowmo_changed.emit(true)
 
