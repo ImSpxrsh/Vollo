@@ -33,6 +33,8 @@ var _hint_tween: Tween
 var _hints_on := false
 var _hints_shown := {}
 var _placed_count := 0
+var _hotbar_notice: Label
+var _hotbar_notice_tween: Tween
 
 func _ready() -> void:
 	for i in 3:
@@ -44,7 +46,7 @@ func _ready() -> void:
 		cards.append(card)
 	hotbar.visible = true
 	controls_label.visible = true
-	controls_label.text = "1/2/3 SELECT   ·   CLICK PLACE   ·   R FLIPS RAMP"
+	controls_label.text = "1/2/3 SELECT   ·   CLICK PLACE   ·   R FLIPS RAMP   ·   %s HIDES BAR" % hotbar_key_name()
 	controls_label.modulate = Color(0.27, 0.11, 0.04, 0.82)
 	shield_tag.visible = false
 	milestone_label.visible = false
@@ -84,6 +86,65 @@ func _ready() -> void:
 	best_label.text = "BEST  %d m" % maxi(GameManager.best, SaveManager.high_score)
 	_update_status()
 	_connect_ball.call_deferred()
+	_create_hotbar_notice()
+	_apply_hotbar_visibility()
+	SaveManager.settings_changed.connect(_apply_hotbar_visibility)
+
+# --- hide hotbar (toggle_hotbar action, Shift by default, rebindable in Controls)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_echo() or not event.is_action_pressed("toggle_hotbar"):
+		return
+	if GameManager.state != GameManager.State.PLAYING:
+		return
+	SaveManager.set_hotbar_hidden(not SaveManager.hotbar_hidden)
+	_show_hotbar_notice()
+	get_viewport().set_input_as_handled()
+
+func _apply_hotbar_visibility() -> void:
+	hotbar.visible = not SaveManager.hotbar_hidden
+
+func _create_hotbar_notice() -> void:
+	_hotbar_notice = Label.new()
+	_hotbar_notice.name = "HotbarNotice"
+	_hotbar_notice.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_hotbar_notice.offset_left = -300.0
+	_hotbar_notice.offset_right = 300.0
+	_hotbar_notice.offset_top = -60.0
+	_hotbar_notice.offset_bottom = -24.0
+	_hotbar_notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hotbar_notice.add_theme_font_size_override("font_size", 20)
+	_hotbar_notice.add_theme_color_override("font_color", Color("FFD166"))
+	_hotbar_notice.add_theme_color_override("font_outline_color", Color(0.12, 0.05, 0.02))
+	_hotbar_notice.add_theme_constant_override("outline_size", 8)
+	_hotbar_notice.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hotbar_notice.visible = false
+	$Root.add_child(_hotbar_notice)
+
+func _show_hotbar_notice() -> void:
+	var key := hotbar_key_name()
+	_hotbar_notice.text = ("HOTBAR HIDDEN  ·  %s TO SHOW" % key) if SaveManager.hotbar_hidden else ("HOTBAR SHOWN  ·  %s TO HIDE" % key)
+	if _hotbar_notice_tween and _hotbar_notice_tween.is_valid():
+		_hotbar_notice_tween.kill()
+	_hotbar_notice.visible = true
+	_hotbar_notice.modulate.a = 1.0
+	_hotbar_notice_tween = _hotbar_notice.create_tween().set_ignore_time_scale(true)
+	_hotbar_notice_tween.tween_interval(1.4)
+	_hotbar_notice_tween.tween_property(_hotbar_notice, "modulate:a", 0.0, 0.4)
+	_hotbar_notice_tween.tween_callback(_hotbar_notice.hide)
+
+## Name of the key currently bound to toggle_hotbar (follows rebinding).
+static func hotbar_key_name() -> String:
+	for ev in InputMap.action_get_events("toggle_hotbar"):
+		if ev is InputEventKey:
+			var k := ev as InputEventKey
+			var code := k.keycode if k.keycode != KEY_NONE else k.physical_keycode
+			return OS.get_keycode_string(code).to_upper()
+		if ev is InputEventMouseButton:
+			return "MOUSE %d" % (ev as InputEventMouseButton).button_index
+		if ev is InputEventJoypadButton:
+			return "BUTTON %d" % (ev as InputEventJoypadButton).button_index
+	return "THE HOTBAR KEY"
 
 func _create_level_banner() -> void:
 	_level_banner = Label.new()
