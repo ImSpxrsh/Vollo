@@ -33,6 +33,7 @@ var _ghost_status: Label
 var _queued_item := -1
 var _queued_position := Vector2.ZERO
 var _deny_sound_left := 0.0
+var last_placed: Node2D
 
 func _ready() -> void:
 	_ghost = Polygon2D.new()
@@ -107,8 +108,12 @@ func _process(delta: float) -> void:
 		return
 	_try_queued_placement()
 	var item: int = _ps().selected_item
-	var t := placement_transform(item, aim_position())
-	var geometry_ok := not overlaps_ball(item, t) and in_range(t.origin)
+	var aim := aim_position()
+	var gated: Variant = _gate(item, aim, true)
+	if gated != null:
+		aim = gated
+	var t := placement_transform(item, aim)
+	var geometry_ok := gated != null and not overlaps_ball(item, t) and in_range(t.origin)
 	var ready := _ps().is_ready(item)
 	var ok := _ps().can_afford(item) and ready and geometry_ok
 	var col := WorldConst.C_ACCENT if ok else (Color("FFD166") if geometry_ok and not ready else WorldConst.C_HAZARD)
@@ -135,8 +140,20 @@ func _preview_polygon(item: int, half_size: Vector2) -> PackedVector2Array:
 		return PackedVector2Array([Vector2(-half_size.x, half_size.y), Vector2(half_size.x, -half_size.y), Vector2(half_size.x, half_size.y)])
 	return PackedVector2Array([Vector2(-half_size.x, -half_size.y), Vector2(half_size.x, -half_size.y), Vector2(half_size.x, half_size.y), Vector2(-half_size.x, half_size.y)])
 
+## Runs GameManager.placement_filter (the tutorial's gate) for the human player.
+## Returns the position to build at, or null when the placement is refused.
+func _gate(item: int, world_pos: Vector2, preview: bool) -> Variant:
+	if ai_controlled or player_index != 0 or not GameManager.placement_filter.is_valid():
+		return world_pos
+	return GameManager.placement_filter.call(item, world_pos, preview)
+
 func _request_place(world_pos: Vector2) -> void:
 	var item: int = _ps().selected_item
+	var gated: Variant = _gate(item, world_pos, false)
+	if gated == null:
+		_play_deny()
+		return
+	world_pos = gated
 	var t := placement_transform(item, world_pos)
 	if overlaps_ball(item, t) or not in_range(t.origin):
 		_play_deny()
@@ -171,6 +188,11 @@ func place_at(world_pos: Vector2) -> bool:
 	if not GameManager.is_alive(player_index):
 		return false
 	var item: int = _ps().selected_item
+	var gated: Variant = _gate(item, world_pos, true)
+	if gated == null:
+		_play_deny()
+		return false
+	world_pos = gated
 	var t := placement_transform(item, world_pos)
 	if overlaps_ball(item, t) or not in_range(t.origin):
 		_play_deny()
@@ -192,6 +214,7 @@ func place_at(world_pos: Vector2) -> bool:
 	node.global_position = t.origin
 	if private_pieces:
 		WorldConst.set_visibility_recursive(node, WorldConst.VISIBILITY_PRIVATE[player_index])
+	last_placed = node
 	return true
 
 func in_range(world_pos: Vector2) -> bool:
