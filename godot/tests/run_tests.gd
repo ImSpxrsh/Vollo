@@ -31,6 +31,7 @@ func _run() -> void:
 		"test_variety_menu_equips",
 		"test_slowmo_and_boost",
 		"test_hearts_and_rescue",
+		"test_hit_ghosts_through_wall",
 		"test_clutch_only_near_hazards",
 		"test_bounce_enemy_away",
 		"test_shop_upgrades",
@@ -427,6 +428,35 @@ func test_hearts_and_rescue() -> String:
 		return "falling out with hearts left ended the run"
 	if _ball().global_position.y > 500.0:
 		return "ball was not bounced back up after falling (y=%d)" % _ball().global_position.y
+	return ""
+
+func test_hit_ghosts_through_wall() -> String:
+	await _start_main()
+	_remove_hazards()
+	await _frames(5)
+	var start: int = _gm().health
+	var wall: Node2D = load("res://scenes/obstacles/HazardWall.tscn").instantiate()
+	_main.add_child(wall)
+	var wall_x := _ball().global_position.x + 90.0
+	wall.global_position = Vector2(wall_x, 470.0)
+	var y_before := _ball().global_position.y
+	await _frames(45)
+	if _gm().health != start - 1:
+		return "hitting a wall should cost exactly one heart (lost %d)" % (start - _gm().health)
+	if _ball().global_position.x < wall_x + 40.0:
+		return "ball did not pass through the wall (x=%d, wall=%d)" % [int(_ball().global_position.x), int(wall_x)]
+	if _ball().global_position.y < y_before - 40.0:
+		return "ball was still knocked upward by the hit (y %d -> %d)" % [int(y_before), int(_ball().global_position.y)]
+	# Falling out while still blinking from that hit must not cost a second heart.
+	_ball().global_position.y = 900.0
+	await _frames(3)
+	if _gm().health != start - 1:
+		return "falling right after a hit cost a second heart"
+	if _gm().state != 1:
+		return "run ended after a single hit"
+	await _frames(120)
+	if not (_ball().collision_mask & 4):
+		return "ball kept ghosting through hazards after the blink ended"
 	return ""
 
 func test_clutch_only_near_hazards() -> String:
