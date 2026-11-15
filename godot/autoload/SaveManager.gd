@@ -40,7 +40,7 @@ const AWARDS := [
 	{"id": "legend", "name": "Legend", "desc": "Roll 400 m in one run", "stat": "best_distance", "target": 400},
 ]
 const STAT_KEYS := ["total_bounces", "total_coins", "total_stomps", "total_shield_saves", "runs_played",
-		"best_distance", "best_combo", "best_run_coins", "best_level"]
+		"best_distance", "best_combo", "best_run_coins", "best_level", "tutorial_done", "maps_cleared"]
 
 var high_score := 0
 var total_bounces := 0

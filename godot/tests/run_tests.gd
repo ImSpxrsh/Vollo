@@ -40,8 +40,14 @@ func _run() -> void:
 		"test_versus_private_pieces_and_lock",
 		"test_versus_survivor_wins_once_ahead",
 		"test_versus_bot_plays",
+		"test_custom_map_finish",
+		"test_tutorial_holds_time", "test_tutorial_mistake_rewinds",
+		"test_replay_roundtrip",
+		"test_map_builder_edit",
+		"test_watch_mode_bots",
 	]
 	_backup_save()
+	var replays_before := ReplayStore.list()
 	for test_name in tests:
 		await _reset()
 		var error: String = await call(test_name)
@@ -52,6 +58,9 @@ func _run() -> void:
 			_failures += 1
 			print("FAIL ", test_name, ": ", error)
 	await _reset()
+	for path in ReplayStore.list():
+		if not replays_before.has(path):
+			ReplayStore.remove(path)
 	_restore_save()
 	print("%d passed, %d failed" % [_passes, _failures])
 	quit(_failures)
@@ -85,7 +94,12 @@ func _reset() -> void:
 	paused = false
 	_gm().versus = false
 	_gm().versus_bot = false
+	_gm().versus_watch = false
 	_gm().input_locked = false
+	_gm().custom_map = {}
+	_gm().tutorial = false
+	_gm().map_from_builder = false
+	_gm().time_hold = 1.0
 	Engine.time_scale = 1.0
 	if _main and is_instance_valid(_main):
 		_main.queue_free()
@@ -598,3 +612,151 @@ func test_versus_bot_plays() -> String:
 		return "bot never placed a piece in 5 seconds"
 	return "" if _gm().player(1).distance > 10 else "bot made no progress"
 
+
+const TEST_MAP := {"name": "Test", "objects": [{"k": "low_wall", "x": 1500, "h": 0.5}, {"k": "coin", "x": 1800, "y": 380}, {"k": "finish", "x": 2600}]}
+
+func test_custom_map_finish() -> String:
+	var best_before: int = _sm().high_score
+	_gm().custom_map = TEST_MAP.duplicate(true)
+	await _start_main()
+	var gen: Node = _main.get_node("LevelGenerator")
+	if not gen.custom or not gen.get_layout_signature().begins_with("M:low_wall:1500|M:coin:1800"):
+		return "custom map layout not used: " + gen.get_layout_signature()
+	if absf(gen.finish_x - 2600.0) > 0.1:
+		return "finish line at %s" % gen.finish_x
+	gen.finish_x = _ball().global_position.x - 1.0
+	await _frames(2)
+	if not _gm().cleared or _gm().state != 3:
+		return "passing the finish did not clear the course"
+	if _sm().high_score != best_before:
+		return "custom maps should not change the high score"
+	return ""
+
+func test_tutorial_holds_time() -> String:
+	_gm().custom_map = MapStore.TUTORIAL.duplicate(true)
+	_gm().tutorial = true
+	await _start_main()
+	await _frames(3)
+	if not _main.has_node("Tutorial"):
+		return "tutorial overlay missing"
+	var tut: Node = _main.get_node("Tutorial")
+	var placer: Node = _main.get_node("ItemPlacer")
+	var mistakes := [0]
+	_gm().tutorial_mistake.connect(func() -> void: mistakes[0] += 1)
+	var froze := 0
+	var next_floor := 0.0
+	var f := 0
+	while _gm().state != _gm().State.GAME_OVER and f < 60 * 90:
+		await process_frame
+		f += 1
+		var l: Dictionary = tut.current()
+		if tut.frozen:
+			if Engine.time_scale > 0.01:
+				return "frozen lesson did not stop time (scale %s)" % Engine.time_scale
+			froze += 1
+			_gm().select_item(int(l.item))
+			placer.place_at(l.targets[tut.target])
+		elif l.get("free", false) and not tut._completed:
+			_gm().select_item(2)
+			var bx := _ball().global_position.x
+			next_floor = maxf(next_floor, bx + 160.0)
+			if next_floor < bx + 420.0 and _gm().player(0).is_ready(2) and placer.place_at(Vector2(next_floor, 471)):
+				next_floor += 205.0
+	if froze < 5:
+		return "tutorial only froze %d times" % froze
+	if mistakes[0] > 0:
+		return "following the glowing spots still caused %d mistakes" % mistakes[0]
+	if not _gm().cleared:
+		return "tutorial not finished (x=%d)" % int(_ball().global_position.x)
+	if _gm().player(0).stomps < 1:
+		return "stomp lesson did not stomp"
+	return ""
+
+func test_tutorial_mistake_rewinds() -> String:
+	_gm().custom_map = MapStore.TUTORIAL.duplicate(true)
+	_gm().tutorial = true
+	await _start_main()
+	await _frames(3)
+	var tut: Node = _main.get_node("Tutorial")
+	_ball().teleport(Vector2(1500, 428))
+	await _frames(30)
+	var hp: int = _gm().health
+	_ball()._invuln_left = 0.0
+	_ball().kill()
+	await _frames(3)
+	if _gm().health != hp:
+		return "tutorial hits should not cost hearts"
+	if absf(_ball().global_position.x - float(MapStore.TUTORIAL_LESSONS[tut.lesson + 1].cp)) > 40.0:
+		return "mistake did not rewind to the lesson start (x=%d)" % int(_ball().global_position.x)
+	return ""
+
+func test_replay_roundtrip() -> String:
+	await _start_main()
+	var rec: Node = _main.get("recorder")
+	if rec == null:
+		return "solo runs have no recorder"
+	_gm().select_item(2)
+	await _frames(20)
+	_main.get_node("ItemPlacer").place_at(_ball().global_position + Vector2(300, 60))
+	await _frames(60)
+	for h in _gm().max_health:
+		_ball()._invuln_left = 0.0
+		_ball().kill()
+		await _frames(1)
+	if String(rec.last_path).is_empty():
+		return "no replay saved when the run ended"
+	var data := ReplayStore.load_replay(rec.last_path)
+	if (data.get("frames", []) as Array).size() < 20 or (data.get("pieces", []) as Array).size() < 1:
+		return "replay is missing frames or pieces"
+	_main.queue_free()
+	paused = false
+	ReplayStore.pending = data
+	_main = load("res://scenes/game/replay_player.tscn").instantiate()
+	root.add_child(_main)
+	Engine.time_scale = 4.0
+	for i in 600:
+		await process_frame
+		if _main._done:
+			break
+	Engine.time_scale = 1.0
+	if not _main._done:
+		return "replay did not reach the end"
+	if _main._piece_i != (data.pieces as Array).size():
+		return "replay did not spawn every piece"
+	ReplayStore.pending = {}
+	return ""
+
+func test_map_builder_edit() -> String:
+	_main = load("res://scenes/ui/MapBuilder.tscn").instantiate()
+	root.add_child(_main)
+	await process_frame
+	if _main.place({"k": "coin", "x": 100, "y": 300}):
+		return "placing inside the start area should be refused"
+	if not _main.place({"k": "enemy", "x": 1500, "y": 400}) or not _main.place({"k": "spikes_low", "x": 1900, "n": 3}):
+		return "could not place objects"
+	_main.place({"k": "finish", "x": 3000})
+	var finishes: Array = _main.to_dict().objects.filter(func(o: Dictionary) -> bool: return o.k == "finish")
+	if finishes.size() != 1 or int(finishes[0].x) != 3000:
+		return "a map should have exactly one finish line"
+	if not _main.erase_near(Vector2(1500, 400)):
+		return "right-click erase missed the devil ball"
+	if _main.to_dict().objects.size() != 2:
+		return "expected 2 objects, got %d" % _main.to_dict().objects.size()
+	return ""
+
+func test_watch_mode_bots() -> String:
+	_gm().versus_varieties.assign(["yellow", "orange"])
+	_gm().versus_bot = true
+	_gm().versus_watch = true
+	_gm().bot_difficulty = 3
+	_main = load("res://scenes/game/versus.tscn").instantiate()
+	root.add_child(_main)
+	await _frames(2)
+	_main.end_countdown()
+	if _main.bots.size() != 2 or not _main.placers[0].ai_controlled or not _main.placers[1].ai_controlled:
+		return "watch mode needs two bot-controlled players"
+	await _frames(240)
+	var pieces: int = _main.world.get_node("Items").get_child_count()
+	if pieces < 1 and _gm().state == 1:
+		return "the bots never placed anything"
+	return ""

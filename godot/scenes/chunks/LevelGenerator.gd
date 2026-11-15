@@ -79,7 +79,10 @@ var _next_level_x := 0.0
 var _level := 1
 var _step_in_level := 0
 var _random_index := 0
+var finish_x := INF
+var custom := false
 static var _run_nonce := 0
+const FINISH_PAD := 600.0
 
 func _init() -> void:
 	_randomize_run_seed()
@@ -93,6 +96,8 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	if _ball and is_instance_valid(_ball):
 		var x := _ball.global_position.x
+		if custom and x >= finish_x and GameManager.is_alive(0):
+			GameManager.finish_course()
 		if _other_ball and is_instance_valid(_other_ball):
 			var ox := _other_ball.global_position.x
 			if _other_ball.get("dead") == true:
@@ -150,6 +155,10 @@ func reset() -> void:
 		var start: Variant = _ball.get("start_x")
 		_origin_x = float(start) if start is float and float(start) != 0.0 else _ball.global_position.x
 	_next_level_x = _origin_x + LEVEL_SPAN_PX
+	custom = not GameManager.custom_map.is_empty()
+	finish_x = INF
+	if custom:
+		_build_custom(GameManager.custom_map)
 	var x := _ball.global_position.x if _ball and is_instance_valid(_ball) else 0.0
 	update_for_x(x)
 
@@ -182,6 +191,83 @@ func current_metres() -> float:
 
 func current_level() -> int:
 	return _level
+
+func _build_custom(map: Dictionary) -> void:
+	_next_x = INF
+	var objects: Array = (map.get("objects", []) as Array).duplicate()
+	objects.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a.x) < float(b.x))
+	var last_x := START_X
+	for obj: Dictionary in objects:
+		var kind := String(obj.get("k", ""))
+		var x := float(obj.get("x", 0.0))
+		if kind == "finish":
+			finish_x = minf(finish_x, x)
+			continue
+		var holder := _new_holder(x, "Map")
+		spawn_object(holder, obj)
+		last_x = maxf(last_x, x)
+		_layout_codes.append("M:%s:%d" % [kind, roundi(x)])
+	if finish_x == INF:
+		finish_x = last_x + FINISH_PAD
+	var flag := _new_holder(finish_x, "Finish")
+	add_finish_flag(flag)
+
+func spawn_object(holder: Node2D, obj: Dictionary) -> void:
+	var y := float(obj.get("y", 360.0))
+	var h := float(obj.get("h", 1.0))
+	match String(obj.get("k", "")):
+		"low_wall":
+			_add_wall(holder, 0.0, float(obj.get("gy", BOTTOM_Y)), false, h)
+		"hang_wall":
+			_add_wall(holder, 0.0, TOP_Y, true, h)
+		"spikes_low":
+			_add_spike_bank(holder, 0.0, float(obj.get("gy", BOTTOM_Y)), false, int(obj.get("n", 2)))
+		"spikes_high":
+			_add_spike_bank(holder, 0.0, TOP_Y, true, int(obj.get("n", 2)))
+		"enemy":
+			_add_enemy(holder, 0.0, y, 60.0)
+		"grump":
+			_add_grump(holder, 0.0, y, 110.0)
+		"coin":
+			_add_star(holder, 0.0, y)
+		"shield":
+			_add_at(holder, SHIELD, Vector2(0.0, y))
+		"slowmo":
+			_add_at(holder, SLOWMO, Vector2(0.0, y))
+		"booster":
+			_add_at(holder, BOOSTER, Vector2(0.0, y))
+		"bridge":
+			_add_at(holder, BRIDGE, Vector2(0.0, y))
+		"finish":
+			add_finish_flag(holder)
+		"ground":
+			var ground := GroundSegment.new()
+			ground.width = float(obj.get("w", 600.0))
+			ground.thickness = 80.0
+			ground.position = Vector2(0.0, float(obj.get("y", 460.0)))
+			holder.add_child(ground)
+
+static func add_finish_flag(holder: Node2D) -> void:
+	var pole := Line2D.new()
+	pole.points = PackedVector2Array([Vector2(0, 650), Vector2(0, 120)])
+	pole.width = 8.0
+	pole.default_color = Color("F4EBD9")
+	holder.add_child(pole)
+	for row in 4:
+		for col in 6:
+			var sq := Polygon2D.new()
+			var o := Vector2(4 + col * 22, 122 + row * 22)
+			sq.polygon = PackedVector2Array([o, o + Vector2(22, 0), o + Vector2(22, 22), o + Vector2(0, 22)])
+			sq.color = Color("1A1A1A") if (row + col) % 2 == 0 else Color("F4EBD9")
+			holder.add_child(sq)
+	var label := Label.new()
+	label.text = "FINISH"
+	label.position = Vector2(-40, 70)
+	label.add_theme_font_size_override("font_size", 34)
+	label.add_theme_color_override("font_color", Color("FFD166"))
+	label.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0.02))
+	label.add_theme_constant_override("outline_size", 8)
+	holder.add_child(label)
 
 func _spawn_next() -> void:
 	if _next_x + 650.0 > _next_level_x:
@@ -321,7 +407,7 @@ func _add_wall(holder: Node2D, x: float, base_y: float, inverted: bool, height :
 	wall.position = Vector2(x, base_y - sink if inverted else base_y + sink)
 	wall.scale.y = -1.0 if inverted else 1.0
 	holder.add_child(wall)
-	_add_warning(holder, x - 74.0, 600.0 if not inverted else 130.0)
+	_add_warning(holder, x - 74.0, minf(600.0, base_y - 50.0) if not inverted else 130.0)
 
 func _add_spike_bank(holder: Node2D, x: float, base_y: float, inverted: bool, count: int) -> void:
 	for i in count:

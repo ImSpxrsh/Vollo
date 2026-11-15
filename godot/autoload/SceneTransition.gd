@@ -4,6 +4,7 @@ const FADE_TIME := 0.25
 
 var _rect: ColorRect
 var _busy := false
+var _queued: Callable
 
 func _ready() -> void:
 	layer = 100
@@ -22,6 +23,7 @@ func reload_scene() -> void:
 
 func _transition(swap: Callable) -> void:
 	if _busy:
+		_queued = swap
 		return
 	_busy = true
 	_rect.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -38,3 +40,7 @@ func _transition(swap: Callable) -> void:
 	await t2.finished
 	_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_busy = false
+	if _queued.is_valid():
+		var next := _queued
+		_queued = Callable()
+		_transition(next)

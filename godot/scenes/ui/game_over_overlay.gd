@@ -28,6 +28,9 @@ var _leaving := false
 var _badge_tween: Tween
 var _awards_label: Label
 var _progress_label: Label
+var _online_label: Label
+var _replay_button: Button
+var _header_art: Control
 var _best_before_run := 0
 var _hint_tween: Tween
 
@@ -55,6 +58,18 @@ func _ready() -> void:
 	stars_label.add_sibling(_awards_label)
 	_progress_label = _small_label("ProgressLabel", Color("8A3B12"))
 	_awards_label.add_sibling(_progress_label)
+	_online_label = _small_label("OnlineLabel", Color("B5651D"))
+	_progress_label.add_sibling(_online_label)
+	Leaderboard.score_posted.connect(_on_score_posted)
+	_replay_button = Button.new()
+	_replay_button.name = "ReplayButton"
+	_replay_button.text = "Watch Replay"
+	_replay_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_replay_button.theme_type_variation = &"BBGhostButton"
+	_replay_button.pressed.connect(watch_replay)
+	main_menu_button.add_sibling(_replay_button)
+	if GameManager.map_from_builder:
+		main_menu_button.text = "Back to Builder"
 	_best_before_run = SaveManager.high_score
 	_apply_header_art()
 
@@ -85,6 +100,7 @@ func _apply_header_art() -> void:
 	header_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	header_label.add_sibling(header_art)
 	header_label.visible = false
+	_header_art = header_art
 
 func _on_run_over(distance: int, best: int, is_new_best: bool, bounces: int) -> void:
 	last_distance = distance
@@ -106,6 +122,10 @@ func _on_run_over(distance: int, best: int, is_new_best: bool, bounces: int) -> 
 			progress_lines.append(line)
 	_progress_label.text = "\n".join(progress_lines)
 	_progress_label.visible = not progress_lines.is_empty()
+	_online_label.text = _online_text(distance)
+	_online_label.visible = not _online_label.text.is_empty()
+	_apply_course_header()
+	_replay_button.visible = not GameManager.tutorial
 	show_results()
 
 func _best_delta_text(distance: int, best: int, is_new_best: bool) -> String:
@@ -113,6 +133,54 @@ func _best_delta_text(distance: int, best: int, is_new_best: bool) -> String:
 		return "+%d m vs best" % (distance - _best_before_run) if _best_before_run > 0 else ""
 	var short := best - distance
 	return "Tied your best" if short <= 0 else "%d m short of your best" % short
+
+func _apply_course_header() -> void:
+	if not GameManager.is_custom_run():
+		return
+	header_label.visible = true
+	if _header_art:
+		_header_art.visible = false
+	if GameManager.cleared:
+		header_label.text = "TUTORIAL COMPLETE!" if GameManager.tutorial else "COURSE CLEAR!"
+		_progress_label.text = "You're ready for the real thing. Press PLAY on the menu!" if GameManager.tutorial else "You beat %s." % String(GameManager.custom_map.get("name", "this map"))
+	else:
+		header_label.text = "CRASHED"
+		_progress_label.text = "Map: %s" % String(GameManager.custom_map.get("name", "custom"))
+	_progress_label.visible = true
+
+func watch_replay() -> void:
+	if not shown or _leaving:
+		return
+	var rec: Variant = get_tree().current_scene.get("recorder") if get_tree().current_scene else null
+	if rec == null or String(rec.last_path).is_empty():
+		AudioManager.play("deny")
+		return
+	var data := ReplayStore.load_replay(String(rec.last_path))
+	if data.is_empty():
+		AudioManager.play("deny")
+		return
+	_leaving = true
+	AudioManager.play("click")
+	GameManager.watch_replay(data)
+
+func _online_text(distance: int) -> String:
+	if GameManager.is_custom_run():
+		return ""
+	if not Leaderboard.is_configured() or GameManager.versus:
+		return ""
+	if not Leaderboard.is_logged_in():
+		return "Log in on the LEADERBOARD to post your best online"
+	if distance > Leaderboard.online_best:
+		return "Posting to the leaderboard..."
+	if Leaderboard.online_rank > 0:
+		return "WORLD RANK  #%d  ·  online best %d m" % [Leaderboard.online_rank, Leaderboard.online_best]
+	return ""
+
+func _on_score_posted(online_best: int, rank: int) -> void:
+	if _online_label == null or not shown:
+		return
+	_online_label.text = "NEW ONLINE BEST  ·  WORLD RANK  #%d" % rank if rank > 0 else "Online best %d m" % online_best
+	_online_label.visible = true
 
 func _next_award_text() -> String:
 	var pick := ""

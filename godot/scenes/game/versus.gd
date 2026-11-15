@@ -31,12 +31,19 @@ var _results: Control
 var _results_shown := false
 var _countdown_label: Label
 var bot: Node
+var bots: Array[Node] = []
+var recorder: ReplayRecorder
+var _p1_name := "P1"
+var watch_speed := 1
 var _p2_name := "P2"
 
 func _ready() -> void:
 	ensure_p2_actions()
 	GameManager.versus = true
 	_p2_name = "BOT" if GameManager.versus_bot else "P2"
+	if GameManager.versus_watch:
+		_p1_name = "BOT 1"
+		_p2_name = "BOT 2"
 	_build_split()
 	_build_world()
 	_build_hud()
@@ -45,6 +52,10 @@ func _ready() -> void:
 	for i in 2:
 		GameManager.player(i).level_changed.connect(_on_level_changed.bind(i))
 	GameManager.start_run()
+	recorder = ReplayRecorder.new()
+	recorder.name = "Recorder"
+	add_child(recorder)
+	recorder.setup(balls, world.get_node("LevelGenerator"), "watch" if GameManager.versus_watch else ("bot" if GameManager.versus_bot else "versus"), [_p1_name, _p2_name])
 	_start_countdown()
 
 static func ensure_p2_actions() -> void:
@@ -170,8 +181,9 @@ func _build_world() -> void:
 		placer.set("ball_path", balls[i].get_path())
 		placer.set("items_path", items.get_path())
 		placer.set("player_index", i)
+		var is_bot := GameManager.versus_watch or (i == 1 and GameManager.versus_bot)
 		placer.set("cursor_mode", i == 1 and not GameManager.versus_bot)
-		placer.set("ai_controlled", i == 1 and GameManager.versus_bot)
+		placer.set("ai_controlled", is_bot)
 		placer.set("private_pieces", true)
 		world.add_child(placer)
 		placers.append(placer)
@@ -182,15 +194,21 @@ func _build_world() -> void:
 		views[i].add_child(cam)
 		if i == 0:
 			placer.set("mouse_aim", _p1_mouse_world.bind(cam))
-	if GameManager.versus_bot:
-		bot = Node.new()
-		bot.name = "Bot"
-		bot.set_script(BOT)
-		bot.set("ball", balls[1])
-		bot.set("placer", placers[1])
-		bot.set("player_index", 1)
-		bot.set("difficulty", GameManager.bot_difficulty)
-		world.add_child(bot)
+	for i in 2:
+		if i == 0 and not GameManager.versus_watch:
+			continue
+		if i == 1 and not GameManager.versus_bot:
+			continue
+		var b := Node.new()
+		b.name = "Bot%d" % (i + 1)
+		b.set_script(BOT)
+		b.set("ball", balls[i])
+		b.set("placer", placers[i])
+		b.set("player_index", i)
+		b.set("difficulty", 3 if i == 0 else GameManager.bot_difficulty)
+		world.add_child(b)
+		bots.append(b)
+	bot = bots.back() if not bots.is_empty() else null
 
 func _p1_mouse_world(cam: Camera2D) -> Vector2:
 	var screen := get_viewport().get_mouse_position()
@@ -216,7 +234,7 @@ func _make_ghost(ball: Node2D, i: int) -> void:
 
 func _add_tag(ball: Node2D, i: int) -> void:
 	var tag := Label.new()
-	tag.text = "P1" if i == 0 else _p2_name
+	tag.text = _p1_name if i == 0 else _p2_name
 	tag.add_theme_font_size_override("font_size", 26)
 	tag.add_theme_color_override("font_color", P_COLORS[i])
 	tag.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0.02))
@@ -269,8 +287,10 @@ func _build_hud() -> void:
 	var help := Label.new()
 	help.name = "Controls"
 	help.text = "P1  mouse · 1/2/3 · R flip · click to place          P2  arrows · , . / · ' flip · Enter   (or gamepad: stick · X · Y · A)"
-	if GameManager.versus_bot:
-		help.text = "You: mouse to aim · 1/2/3 pick a piece · R flips · click to place.   Beat the %s bot!" % ["EASY", "NORMAL", "HARD"][GameManager.bot_difficulty]
+	if GameManager.versus_watch:
+		help.text = "Watching two EXTREME bots race.   Tab: speed x1 / x2 / x4   ·   Esc: pause"
+	elif GameManager.versus_bot:
+		help.text = "You: mouse to aim · 1/2/3 pick a piece · R flips · click to place.   Beat the %s bot!" % GameManager.BOT_NAMES[GameManager.bot_difficulty]
 	help.position = Vector2(0, 720.0 - 30.0)
 	help.size = Vector2(1280, 24)
 	help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -308,7 +328,7 @@ func _make_panel(i: int, top: float) -> Dictionary:
 	row.add_theme_constant_override("separation", 10)
 	panel.add_child(row)
 	var name_label := Label.new()
-	name_label.text = "P1" if i == 0 else _p2_name
+	name_label.text = _p1_name if i == 0 else _p2_name
 	name_label.add_theme_font_size_override("font_size", 26)
 	name_label.add_theme_color_override("font_color", P_COLORS[i])
 	row.add_child(name_label)
@@ -366,7 +386,9 @@ func _update_hud() -> void:
 	if gap == 0:
 		_lead_label.text = "NECK AND NECK"
 	else:
-		_lead_label.text = "%s LEADS BY %d m" % ["P1" if gap > 0 else _p2_name, absi(gap)]
+		_lead_label.text = "%s LEADS BY %d m" % [_p1_name if gap > 0 else _p2_name, absi(gap)]
+	if GameManager.versus_watch and watch_speed > 1:
+		_lead_label.text += "   ·   x%d" % watch_speed
 
 func _start_countdown() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -405,10 +427,10 @@ func _on_player_out(p: int) -> void:
 	var shade := _out_shades[p]
 	shade.create_tween().tween_property(shade, "color:a", 0.55, 0.4)
 	var label := Label.new()
-	label.text = "%s IS OUT  ·  %d m" % ["P1" if p == 0 else _p2_name, GameManager.player(p).distance]
+	label.text = "%s IS OUT  ·  %d m" % [_name(p), GameManager.player(p).distance]
 	var other := 1 - p
 	if GameManager.player(other).alive:
-		label.text += "\n%s must pass it to win" % ("P1" if other == 0 else _p2_name)
+		label.text += "\n%s must pass it to win" % _name(other)
 		label.size.y = 110
 	label.position = shade.position + Vector2(0, HALF_H * 0.5 - 30.0)
 	label.size = Vector2(1280, 60)
@@ -442,8 +464,8 @@ func _on_versus_over(winner: int, distances: Array) -> void:
 	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	panel.offset_left = -330
 	panel.offset_right = 330
-	panel.offset_top = -230
-	panel.offset_bottom = 230
+	panel.offset_top = -255
+	panel.offset_bottom = 255
 	var box := StyleBoxFlat.new()
 	box.bg_color = Color(0.2, 0.11, 0.05, 0.97)
 	box.border_color = P_COLORS[winner] if winner >= 0 else Color("FFD166")
@@ -460,6 +482,8 @@ func _on_versus_over(winner: int, distances: Array) -> void:
 	title.name = "Winner"
 	if winner < 0:
 		title.text = "IT'S A TIE!"
+	elif GameManager.versus_watch:
+		title.text = "%s WINS!" % _name(winner)
 	elif GameManager.versus_bot:
 		title.text = "YOU WIN!" if winner == 0 else "THE BOT WINS!"
 	else:
@@ -483,7 +507,7 @@ func _on_versus_over(winner: int, distances: Array) -> void:
 		ball.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		c.add_child(ball)
 		var l := Label.new()
-		l.text = "%s\n%d m" % ["P1" if i == 0 else _p2_name, int(distances[i])]
+		l.text = "%s\n%d m" % [_name(i), int(distances[i])]
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		l.add_theme_font_size_override("font_size", 26)
 		l.add_theme_color_override("font_color", P_COLORS[i])
@@ -502,6 +526,19 @@ func _on_versus_over(winner: int, distances: Array) -> void:
 	rematch.theme_type_variation = &"BBPrimaryButton"
 	rematch.pressed.connect(_rematch)
 	col.add_child(rematch)
+	var replay := Button.new()
+	replay.name = "WatchReplay"
+	replay.text = "WATCH REPLAY"
+	replay.custom_minimum_size = Vector2(220, 42)
+	replay.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	replay.pressed.connect(func() -> void:
+		var data := ReplayStore.load_replay(recorder.last_path) if recorder and not recorder.last_path.is_empty() else {}
+		if data.is_empty():
+			AudioManager.play("deny")
+			return
+		AudioManager.play("click")
+		GameManager.watch_replay(data))
+	col.add_child(replay)
 	var menu := Button.new()
 	menu.text = "MAIN MENU"
 	menu.custom_minimum_size = Vector2(220, 46)
@@ -510,11 +547,24 @@ func _on_versus_over(winner: int, distances: Array) -> void:
 		AudioManager.play("click")
 		GameManager.go_to_menu())
 	col.add_child(menu)
-	panel.pivot_offset = Vector2(330, 230)
+	panel.pivot_offset = Vector2(330, 255)
 	panel.scale = Vector2(0.85, 0.85)
 	panel.create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS).tween_property(panel, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
+func _apply_watch_speed() -> void:
+	GameManager.set_speed_mult(watch_speed)
+	AudioManager.play("click")
+	_lead_label.modulate = Color.WHITE
+
+func _name(p: int) -> String:
+	return _p1_name if p == 0 else _p2_name
+
 func _unhandled_input(event: InputEvent) -> void:
+	if GameManager.versus_watch and event is InputEventKey and event.pressed and not event.echo and (event as InputEventKey).keycode == KEY_TAB:
+		get_viewport().set_input_as_handled()
+		watch_speed = 1 if watch_speed >= 4 else watch_speed * 2
+		_apply_watch_speed()
+		return
 	if _results_shown and event.is_action_pressed("restart"):
 		get_viewport().set_input_as_handled()
 		_rematch()

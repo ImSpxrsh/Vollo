@@ -15,6 +15,8 @@ const LEVEL_BACKGROUNDS: Array[Texture2D] = [
 	preload("res://assets/background_pixel_farm.png"),
 	preload("res://assets/background_forest_path.png"),
 ]
+const TUTORIAL_OVERLAY := preload("res://scenes/ui/tutorial_overlay.gd")
+var recorder: ReplayRecorder
 const GRID_ALPHA := [0.0, 0.0, 0.0, 0.0]
 const GRID_HUE := [0.22, 0.30, 0.12, 0.26]
 var _moon: Sprite2D
@@ -41,6 +43,19 @@ func _ready() -> void:
 	GameManager.level_changed.connect(_on_level_changed)
 	GameManager.versus = false
 	GameManager.start_run()
+	if GameManager.tutorial:
+		var overlay := CanvasLayer.new()
+		overlay.name = "Tutorial"
+		overlay.set_script(TUTORIAL_OVERLAY)
+		overlay.set("ball", ball)
+		add_child(overlay)
+	else:
+		recorder = ReplayRecorder.new()
+		recorder.name = "Recorder"
+		add_child(recorder)
+		var who := Leaderboard.username if Leaderboard.is_logged_in() else "YOU"
+		var mode := "map" if GameManager.is_custom_run() else "solo"
+		recorder.setup([ball], $LevelGenerator, mode, [who])
 
 func _setup_background_crossfade() -> void:
 	_next_backdrop = TextureRect.new()

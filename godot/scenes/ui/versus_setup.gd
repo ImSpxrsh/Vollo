@@ -6,6 +6,8 @@ const C_PANEL := Color(0.2, 0.11, 0.05, 0.96)
 const C_GOLD := Color("FFD166")
 const P_COLORS := [Color("FFD166"), Color("7CE0FF")]
 const GUEST_VARIETIES := ["orange", "blue"]
+const MODES := ["VS PLAYER 2", "VS BOT · EASY", "VS BOT · NORMAL", "VS BOT · HARD", "VS BOT · EXTREME", "WATCH BOTS PLAY"]
+const WATCH := 5
 
 var choices: Array[String] = ["yellow", "orange"]
 var _options: Array = [[], []]
@@ -14,6 +16,8 @@ var _names: Array[Label] = []
 var opponent := 0
 var _mode_buttons: Array[Button] = []
 var _p2_title: Label
+var _p1_title: Label
+var _p1_controls: Label
 var _p2_controls: Label
 
 func _ready() -> void:
@@ -48,7 +52,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_LEFT: cycle(1, -1)
 			KEY_RIGHT: cycle(1, 1)
 			KEY_ENTER, KEY_SPACE: start()
-			KEY_B: set_opponent(posmod(opponent + 1, 4))
+			KEY_B: set_opponent(posmod(opponent + 1, MODES.size()))
 
 func close() -> void:
 	if not visible:
@@ -67,13 +71,16 @@ func cycle(p: int, step: int) -> void:
 	_refresh()
 
 func set_opponent(value: int) -> void:
-	opponent = clampi(value, 0, 3)
+	opponent = clampi(value, 0, MODES.size() - 1)
 	AudioManager.play("click")
 	_refresh()
 
 func start() -> void:
 	AudioManager.play("go")
-	GameManager.start_versus(choices[0], choices[1], opponent > 0, opponent - 1)
+	if opponent == WATCH:
+		GameManager.start_versus(choices[0], choices[1], true, 3, true)
+	else:
+		GameManager.start_versus(choices[0], choices[1], opponent > 0, opponent - 1)
 
 func _build() -> void:
 	var dim := ColorRect.new()
@@ -99,16 +106,18 @@ func _build() -> void:
 	panel.add_child(col)
 	col.add_child(_label("VERSUS", 40, C_GOLD, true))
 	col.add_child(_label("Split screen, same course, each side builds their own pieces. Last ball rolling wins!", 15, WorldConst.C_DIM, true))
-	var modes := HBoxContainer.new()
-	modes.alignment = BoxContainer.ALIGNMENT_CENTER
-	modes.add_theme_constant_override("separation", 10)
+	var modes := GridContainer.new()
+	modes.columns = 3
+	modes.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	modes.add_theme_constant_override("h_separation", 10)
+	modes.add_theme_constant_override("v_separation", 8)
 	col.add_child(modes)
-	for m in 4:
+	for m in MODES.size():
 		var b := Button.new()
 		b.name = "Mode%d" % m
-		b.text = ["VS PLAYER 2", "VS BOT · EASY", "VS BOT · NORMAL", "VS BOT · HARD"][m]
+		b.text = MODES[m]
 		b.toggle_mode = true
-		b.custom_minimum_size = Vector2(190, 42)
+		b.custom_minimum_size = Vector2(260, 40)
 		b.pressed.connect(set_opponent.bind(m))
 		modes.add_child(b)
 		_mode_buttons.append(b)
@@ -130,6 +139,8 @@ func _build() -> void:
 		c.add_child(title)
 		if p == 1:
 			_p2_title = title
+		else:
+			_p1_title = title
 		var pick := HBoxContainer.new()
 		pick.alignment = BoxContainer.ALIGNMENT_CENTER
 		c.add_child(pick)
@@ -158,6 +169,8 @@ func _build() -> void:
 		c.add_child(help)
 		if p == 1:
 			_p2_controls = help
+		else:
+			_p1_controls = help
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	buttons.add_theme_constant_override("separation", 20)
@@ -179,9 +192,12 @@ func _refresh() -> void:
 	for m in _mode_buttons.size():
 		_mode_buttons[m].set_pressed_no_signal(m == opponent)
 	if _p2_title:
-		_p2_title.text = "PLAYER 2" if opponent == 0 else "BOT · " + ["EASY", "NORMAL", "HARD"][opponent - 1]
+		_p2_title.text = "PLAYER 2" if opponent == 0 else ("BOT 2 · EXTREME" if opponent == WATCH else "BOT · " + GameManager.BOT_NAMES[opponent - 1])
 		_p2_controls.text = "Arrows aim · Enter places\n,  .  /  pick a piece · ' flips\nGamepad: stick · A · X · Y\n← / → change ball (here)" if opponent == 0 \
 			else "The computer builds its own pieces.\nB switches opponent · ← / → change its ball"
+		_p1_title.text = "BOT 1 · EXTREME" if opponent == WATCH else "PLAYER 1"
+		_p1_controls.text = "Sit back and watch.\nTab in the match speeds it up\nA / D change its ball" if opponent == WATCH \
+			else "Mouse to aim · click to place\n1 / 2 / 3 pick a piece · R flips\nA / D change ball"
 	for p in 2:
 		_balls[p].texture = UiArt.load_texture(SaveManager.get_variety_texture_path(choices[p]))
 		_names[p].text = SaveManager.get_variety_name(choices[p])

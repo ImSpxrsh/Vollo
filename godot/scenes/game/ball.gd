@@ -44,6 +44,7 @@ var variety_color := SUNNY
 var boost_left := 0.0
 
 var _pending_vy := NAN
+var _pending_pos := Vector2(NAN, NAN)
 var _pending_y := NAN
 var _stomp_charge := 0.0
 var _invuln_left := 0.0
@@ -86,6 +87,12 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 		xf.origin.y = _pending_y
 		state.transform = xf
 		_pending_y = NAN
+	if not is_nan(_pending_pos.x):
+		var moved := state.transform
+		moved.origin = _pending_pos
+		state.transform = moved
+		_pending_pos = Vector2(NAN, NAN)
+		velocity = Vector2.ZERO
 	if not is_nan(_pending_vy):
 		velocity.y = _pending_vy
 		_pending_vy = NAN
@@ -108,7 +115,7 @@ func _physics_process(delta: float) -> void:
 	if GameManager.is_alive(player_index):
 		var travelled_px := maxf(0.0, global_position.x - start_x)
 		var late_run_push := minf(5.0, travelled_px / 9000.0)
-		var accel := ACCELERATION * 0.55 if GameManager.is_guided_level(player_index) else ACCELERATION + late_run_push
+		var accel := 0.0 if GameManager.tutorial else ACCELERATION * 0.55 if GameManager.is_guided_level(player_index) else ACCELERATION + late_run_push
 		speed = minf(MAX_SPEED, speed + accel * delta)
 		GameManager.set_travelled(maxi(0, int((global_position.x - start_x) / WorldConst.METRE)), player_index)
 		var grounded := false
@@ -224,6 +231,18 @@ func _take_hit(hearts_left: int) -> void:
 	GameManager.hitstop(0.05)
 	_popup("OUCH!  %d %s LEFT" % [hearts_left, "HEART" if hearts_left == 1 else "HEARTS"], Color("FF6B6B"))
 	_update_hurt_look(hearts_left)
+
+func teleport(pos: Vector2) -> void:
+	_pending_pos = pos
+	_pending_y = NAN
+	_pending_vy = NAN
+	global_position = pos
+	linear_velocity = Vector2.ZERO
+	speed = START_SPEED
+	_invuln_left = 0.6
+	_stomp_charge = 0.0
+	if trail:
+		trail.clear_points()
 
 func _fall_out() -> void:
 	if dead or not GameManager.is_alive(player_index):

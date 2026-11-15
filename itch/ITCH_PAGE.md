@@ -48,7 +48,7 @@ The project already has a **Web** export preset (`godot/export_presets.cfg`, no 
 - **Release status:** Released (or Prototype for a jam build)
 - **Pricing:** No payments (or "$0 or donate")
 - **Genre:** Action  ·  **Secondary:** Platformer
-- **Tags:** `bounce`, `physics`, `endless-runner`, `local-multiplayer`, `split-screen`, `casual`, `2d`, `godot`, `game-jam`, `cute`
+- **Tags:** `bounce`, `physics`, `endless-runner`, `local-multiplayer`, `split-screen`, `level-editor`, `leaderboard`, `casual`, `2d`, `godot`
 - **Input:** Mouse, Keyboard, Xbox controller (player 2 in versus)
 - **Accessibility:** Configurable controls is not supported; tick *High-contrast* and *Reduced motion* options exist
 - **Average session:** A few minutes
@@ -77,14 +77,17 @@ The project already has a **Web** export preset (`godot/export_presets.cfg`, no 
 > heart. Squash devil balls by landing on them. Bounce right next to a spike for a clutch combo.
 >
 > **Features**
+> - A hands-on tutorial that slows time and teaches every piece
 > - Endless course: three hand-made warm-up levels, then randomly generated levels that get harder every 60 m
-> - Checkpoints between levels: continue from the last flag after a crash
 > - 3 hearts, shields, slow-mo hourglasses, speed boosters, rest bridges and coins
 > - Clutch bounces and enemy stomps build a combo for bonus metres
 > - 12 ball "varieties" to unlock through 11 awards. Everyone starts yellow!
 > - Coin shop with permanent upgrades (shield start, sturdier pieces, coin magnet, extra heart…)
 > - **2-player split-screen versus** on one keyboard (or keyboard + gamepad)
-> - **Versus the computer** with Easy, Normal and Hard bots
+> - **Versus the computer** with Easy, Normal, Hard and Extreme bots, or sit back and watch two Extreme bots race
+> - **Map builder**: lay out walls, spikes, devil balls and coins, save your course and play it
+> - **Replays** of your last 15 runs and matches
+> - **Online leaderboard**: make an account with a name and password and see how far everyone else got
 > - Stats & awards page, high-contrast hazards and reduce-motion options
 >
 > **Controls**
@@ -96,7 +99,7 @@ The project already has a **Web** export preset (`godot/export_presets.cfg`, no 
 > | Pick piece | 1 Trampoline · 2 Ramp · 3 Floor |
 > | Flip ramp | R |
 > | Pause | Esc / P |
-> | Restart / continue | Space |
+> | Restart | Space |
 >
 > **Versus, player 2:** arrows aim · Enter places · `,` `.` `/` pick a piece · `'` flips the ramp
 > (gamepad: left stick · A place · X cycle · Y flip)
@@ -105,9 +108,15 @@ The project already has a **Web** export preset (`godot/export_presets.cfg`, no 
 
 **Credits** (same as the in-game Credits screen):
 
-> Game, code and levels: the Voll team · Art: the Voll team; some images found online through Google Images,
-> which belong to their original artists · Music: Voll background theme, written and sung by the Voll team ·
-> Sound effects synthesised in-engine · Menus: Maaack's Godot Menus Template (MIT) · Engine: Godot (MIT)
+> **Made by the Voll team** (team photo: `team_photo.png`, left to right)
+> - **Andrew Ayan Shah**: art lead
+> - **Sparsh Roy**: technical development lead
+> - **Adharv Pemmanasani**: project manager; music, audio, sound effects and testing lead
+>
+> Special thanks to [NJ Hackers](https://nj-hackers.vercel.app/) and [Hack Club](https://hackclub.com/) for helping us make this project!
+>
+> Background theme written and sung by the Voll team · Some images found online through Google Images, which
+> belong to their original artists · Menus: Maaack's Godot Menus Template (MIT) · Engine: Godot (MIT)
 
 ---
 

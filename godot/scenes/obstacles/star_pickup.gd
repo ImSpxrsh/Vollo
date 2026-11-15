@@ -28,10 +28,15 @@ func _process(delta: float) -> void:
 func _on_body_entered(body: Node2D) -> void:
 	if _taken or not body.is_in_group("ball"):
 		return
-	_taken = true
 	GameManager.collect_star(int(body.get("player_index")) if body.get("player_index") != null else 0)
 	if body.has_method("versus_speed_change"):
 		body.call("versus_speed_change", 5.0)
+	take_visual()
+
+func take_visual() -> void:
+	if _taken:
+		return
+	_taken = true
 	AudioManager.play("coin", 0.05, -4.0)
 	var tw := create_tween()
 	tw.set_parallel(true)

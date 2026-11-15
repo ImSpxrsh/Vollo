@@ -20,6 +20,8 @@ signal boost_changed(active: bool)
 signal stomped(position: Vector2, bonus_metres: int)
 signal player_out(player: int)
 signal versus_over(winner: int, distances: Array)
+signal course_cleared
+signal tutorial_mistake
 
 const ITEM_NAMES := ["Trampoline", "Ramp", "Floor"]
 const ITEM_COST := [0.0, 0.0, 0.0]
@@ -49,9 +51,20 @@ var versus_varieties: Array[String] = ["yellow", "orange"]
 var players: Array[PlayerState] = []
 var versus_bot := false
 var bot_difficulty := 1
+var versus_watch := false
+var custom_map: Dictionary = {}
+var tutorial := false
+var map_from_builder := false
+var cleared := false
+const MAIN_SCENE := "res://scenes/game/main.tscn"
+const BUILDER_SCENE := "res://scenes/ui/MapBuilder.tscn"
+const REPLAY_SCENE := "res://scenes/game/replay_player.tscn"
+const BOT_NAMES := ["EASY", "NORMAL", "HARD", "EXTREME"]
 var input_locked := false
 
 var _hitstop_id := 0
+var speed_mult := 1
+var time_hold := 1.0
 
 var distance: int:
 	get: return players[0].distance
@@ -124,7 +137,7 @@ func _process(delta: float) -> void:
 		if slowmo_left <= 0.0:
 			slowmo_left = 0.0
 			if Engine.time_scale > 0.1:
-				Engine.time_scale = 1.0
+				Engine.time_scale = base_time_scale()
 			slowmo_changed.emit(false)
 	for i in player_count():
 		if players[i].alive:
@@ -136,28 +149,34 @@ func player(p := 0) -> PlayerState:
 func player_count() -> int:
 	return 2 if versus else 1
 
+func is_custom_run() -> bool:
+	return not custom_map.is_empty()
+
 func start_run() -> void:
 	trauma = 0.0
 	slowmo_left = 0.0
-	if not versus:
+	cleared = false
+	time_hold = 1.0
+	if not versus and not is_custom_run():
 		SaveManager.begin_run()
-	var hearts := MAX_HEALTH + (1 if SaveManager.has_upgrade("extra_heart") and not versus else 0)
+	var hearts := MAX_HEALTH + (1 if SaveManager.has_upgrade("extra_heart") and not versus and not is_custom_run() else 0)
 	var cd := 0.8 if SaveManager.has_upgrade("quick_hands") and not versus else 1.0
 	for i in players.size():
 		players[i].reset(hearts, cd)
 		players[i].alive = i < player_count()
 		players[i].variety_id = versus_varieties[i] if versus else SaveManager.selected_variety
 	best = SaveManager.high_score
-	Engine.time_scale = 1.0
+	Engine.time_scale = base_time_scale()
 	get_tree().paused = false
 	_set_state(State.PLAYING)
 	for i in player_count():
 		players[i].emit_all()
 
-func start_versus(variety_a: String, variety_b: String, bot := false, difficulty := 1) -> void:
+func start_versus(variety_a: String, variety_b: String, bot := false, difficulty := 1, watch := false) -> void:
 	versus = true
-	versus_bot = bot
-	bot_difficulty = clampi(difficulty, 0, 2)
+	versus_bot = bot or watch
+	versus_watch = watch
+	bot_difficulty = clampi(difficulty, 0, BOT_NAMES.size() - 1)
 	versus_varieties.assign([variety_a, variety_b])
 	get_tree().paused = false
 	Engine.time_scale = 1.0
@@ -165,6 +184,10 @@ func start_versus(variety_a: String, variety_b: String, bot := false, difficulty
 
 func hurt_variety(p := 0) -> int:
 	if state != State.PLAYING or not player(p).alive:
+		return player(p).health
+	if tutorial:
+		add_trauma(0.3)
+		tutorial_mistake.emit()
 		return player(p).health
 	var left := player(p).hurt()
 	add_trauma(0.5)
@@ -180,13 +203,53 @@ func end_run(p := 0) -> void:
 	slowmo_left = 0.0
 	var p0 := players[0]
 	p0.alive = false
-	var is_new_best := p0.distance > SaveManager.high_score
-	SaveManager.record_run(p0.distance, p0.bounces, p0.stars, p0.extra())
+	var is_new_best := p0.distance > SaveManager.high_score and not is_custom_run()
+	if is_custom_run():
+		SaveManager.add_coins(p0.stars)
+	else:
+		SaveManager.record_run(p0.distance, p0.bounces, p0.stars, p0.extra())
 	best = SaveManager.high_score
 	add_trauma(0.8)
 	_set_state(State.GAME_OVER)
 	get_tree().paused = true
 	run_over.emit(p0.distance, best, is_new_best, p0.bounces)
+
+func finish_course() -> void:
+	if state != State.PLAYING or not is_custom_run():
+		return
+	cleared = true
+	SaveManager.stats["tutorial_done" if tutorial else "maps_cleared"] = 1 if tutorial else int(SaveManager.stats.get("maps_cleared", 0)) + 1
+	SaveManager.save_data()
+	course_cleared.emit()
+	end_run(0)
+
+func play_map(map: Dictionary, from_builder := false, is_tutorial := false) -> void:
+	custom_map = map.duplicate(true)
+	map_from_builder = from_builder
+	tutorial = is_tutorial
+	versus = false
+	versus_bot = false
+	versus_watch = false
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	SceneTransition.change_scene(MAIN_SCENE)
+
+func watch_replay(data: Dictionary) -> void:
+	ReplayStore.pending = data
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	_set_state(State.MENU)
+	SceneTransition.change_scene(REPLAY_SCENE)
+
+func open_builder() -> void:
+	set_speed_mult(1)
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	custom_map = {}
+	tutorial = false
+	versus = false
+	_set_state(State.MENU)
+	SceneTransition.change_scene(BUILDER_SCENE)
 
 func _versus_player_out(p: int) -> void:
 	if not player(p).alive:
@@ -239,17 +302,29 @@ func resume() -> void:
 		Engine.time_scale = base_time_scale()
 
 func restart_run() -> void:
+	set_speed_mult(1)
 	get_tree().paused = false
 	Engine.time_scale = 1.0
 	SceneTransition.reload_scene()
 
 func go_to_menu() -> void:
+	set_speed_mult(1)
 	get_tree().paused = false
 	Engine.time_scale = 1.0
 	slowmo_left = 0.0
 	versus = false
 	versus_bot = false
+	versus_watch = false
 	input_locked = false
+	if map_from_builder and not custom_map.is_empty():
+		var back := custom_map
+		map_from_builder = false
+		open_builder()
+		MapStore.editing = back
+		return
+	custom_map = {}
+	tutorial = false
+	map_from_builder = false
 	_set_state(State.MENU)
 	SceneTransition.change_scene(MaaacksMenusTemplate.get_main_menu_path())
 
@@ -265,7 +340,7 @@ func set_travelled(meters: int, p := 0) -> void:
 		_check_versus_lead()
 
 func _check_awards(p := 0) -> void:
-	if state != State.PLAYING or versus or p != 0:
+	if state != State.PLAYING or versus or tutorial or p != 0:
 		return
 	var p0 := players[0]
 	var live := p0.extra()
@@ -312,7 +387,7 @@ func start_slowmo() -> void:
 		return
 	var was_active := slowmo_left > 0.0
 	slowmo_left = SLOWMO_TIME
-	Engine.time_scale = SLOWMO_SCALE
+	Engine.time_scale = SLOWMO_SCALE * speed_mult
 	if not was_active:
 		slowmo_changed.emit(true)
 
@@ -329,7 +404,19 @@ func set_boost(active: bool, p := 0) -> void:
 	ps.boost_changed.emit(active)
 
 func base_time_scale() -> float:
-	return SLOWMO_SCALE if slowmo_left > 0.0 and state == State.PLAYING else 1.0
+	return (SLOWMO_SCALE if slowmo_left > 0.0 and state == State.PLAYING else 1.0) * speed_mult * time_hold
+
+func set_time_hold(value: float) -> void:
+	time_hold = clampf(value, 0.0, 1.0)
+	if state == State.PLAYING:
+		Engine.time_scale = base_time_scale()
+
+func set_speed_mult(mult: int) -> void:
+	speed_mult = clampi(mult, 1, 4)
+	Engine.physics_ticks_per_second = 60 * speed_mult
+	Engine.max_physics_steps_per_frame = 8 * speed_mult
+	if state == State.PLAYING and not get_tree().paused:
+		Engine.time_scale = base_time_scale()
 
 func select_item(item: Item, p := 0) -> void:
 	if state != State.PLAYING:

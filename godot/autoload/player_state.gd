@@ -69,6 +69,9 @@ func reset(hearts: int, cooldown_multiplier: float) -> void:
 	_cooldown_left = [0.0, 0.0, 0.0]
 	_combo_timer = 0.0
 
+func clear_cooldowns() -> void:
+	_cooldown_left = [0.0, 0.0, 0.0]
+
 func emit_all() -> void:
 	distance_changed.emit(distance)
 	combo_changed.emit(combo)

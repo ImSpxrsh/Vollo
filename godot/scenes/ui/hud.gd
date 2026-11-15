@@ -75,7 +75,7 @@ func _ready() -> void:
 	GameManager.bounced.connect(func(clutch: bool, _p: Vector2) -> void:
 		if clutch:
 			_hint("clutch", "Clutch! Bouncing close to danger raises your combo."))
-	_hints_on = int(SaveManager.stats.get("runs_played", 0)) < 3
+	_hints_on = int(SaveManager.stats.get("runs_played", 0)) < 3 and not GameManager.is_custom_run()
 	_on_health_changed(GameManager.health, GameManager.max_health)
 	if _hints_on:
 		get_tree().create_timer(0.8).timeout.connect(func() -> void:
@@ -105,6 +105,8 @@ func _create_level_banner() -> void:
 	$Root.add_child(_level_banner)
 
 func _on_level_changed(number: int, level_name: String, _theme_index: int) -> void:
+	if GameManager.is_custom_run():
+		return
 	if _level_tween and _level_tween.is_valid():
 		_level_tween.kill()
 	var stage := "WARM-UP" if number <= GameManager.GUIDED_LEVELS else "RANDOM ROUTE"

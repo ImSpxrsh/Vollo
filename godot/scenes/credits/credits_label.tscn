@@ -14,18 +14,41 @@ bbcode_enabled = true
 text = "[font_size=56]VOLL[/font_size]
 Made for the \"Bounce Back\" game jam.
 
-[font_size=32]Game design, code & levels[/font_size]
-The Voll team
+[font_size=48]The Team[/font_size]
+[img=400]res://assets/art/team_photo.png[/img]
+[font_size=18]Left to right: Andrew Ayan Shah, Sparsh Roy, Adharv Pemmanasani[/font_size]
+
+[font_size=32][color=#B5451B]Andrew Ayan Shah[/color][/font_size]
+Art lead
+
+[font_size=32][color=#B5451B]Sparsh Roy[/color][/font_size]
+Technical development lead
+
+[font_size=32][color=#B5451B]Adharv Pemmanasani[/color][/font_size]
+Project manager  
+Music, audio, sound effects and testing lead
 
 [font_size=32]Art[/font_size]
-Character, prop and UI art by the Voll team  
+Character, prop and UI art by the Voll team, led by Andrew Ayan Shah  
 Some images were found online through Google Images. They belong to their original artists and are used here for a non-commercial jam entry.
 
-[font_size=32]Music[/font_size]
-Voll background theme, written and sung by the Voll team
+[font_size=32]Code & levels[/font_size]
+The Voll team, led by Sparsh Roy
 
-[font_size=32]Sound effects[/font_size]
-Synthesised in-engine (AudioManager)
+[font_size=32]Music & sound[/font_size]
+Voll background theme, written and sung by the Voll team  
+Music, audio and sound effects led by Adharv Pemmanasani
+
+[font_size=32]Project management[/font_size]
+Adharv Pemmanasani
+
+[font_size=32]Testing[/font_size]
+Led by Adharv Pemmanasani
+
+[font_size=48]Special Thanks[/font_size]
+[font_size=32][url=https://nj-hackers.vercel.app/]NJ Hackers[/url][/font_size]
+[font_size=32][url=https://hackclub.com/]Hack Club[/url][/font_size]
+Thank you for helping us make this project!
 
 [font_size=48]Collaborators[/font_size]
 
