@@ -225,9 +225,9 @@ func spawn_object(holder: Node2D, obj: Dictionary) -> void:
 		"spikes_high":
 			_add_spike_bank(holder, 0.0, TOP_Y, true, int(obj.get("n", 2)))
 		"enemy":
-			_add_enemy(holder, 0.0, y, 60.0)
+			_add_enemy(holder, 0.0, y, float(obj.get("bob", 60.0)))
 		"grump":
-			_add_grump(holder, 0.0, y, 110.0)
+			_add_grump(holder, 0.0, y, float(obj.get("patrol", 110.0)))
 		"coin":
 			_add_star(holder, 0.0, y)
 		"shield":
