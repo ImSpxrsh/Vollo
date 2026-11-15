@@ -17,8 +17,9 @@ const TRAIL_POINTS := 24
 const SUNNY := Color("FFD84A")
 const SHIELDED := Color("4CC9FF")
 const BOOST_TIME := 1.6
+## After a hit the ball blinks for this long, costs no more hearts and passes
+## straight through walls, spikes and enemies instead of being knocked away.
 const HIT_INVULN := 1.2
-const KNOCKBACK_VY := -480.0
 const RESCUE_Y := 250.0
 const CLUTCH_RADIUS := 230.0
 const STOMP_WINDOW := 0.6
@@ -48,6 +49,8 @@ var _pending_pos := Vector2(NAN, NAN)
 var _pending_y := NAN
 var _stomp_charge := 0.0
 var _invuln_left := 0.0
+## Time left passing through hazards after a hit (see HIT_INVULN).
+var _ghost_left := 0.0
 var _item_cooldown := 0.0
 var _roll_angle := 0.0
 var _form_root: Node2D
@@ -104,6 +107,10 @@ func _physics_process(delta: float) -> void:
 	if dead:
 		return
 	_invuln_left = maxf(0.0, _invuln_left - delta)
+	if _ghost_left > 0.0:
+		_ghost_left = maxf(0.0, _ghost_left - delta)
+		if _ghost_left <= 0.0:
+			_set_ghost(false)
 	_item_cooldown = maxf(0.0, _item_cooldown - delta)
 	_stomp_charge = maxf(0.0, _stomp_charge - delta)
 	if boost_left > 0.0:
@@ -223,14 +230,24 @@ func versus_speed_change(amount: float, mult := 1.0) -> void:
 func _take_hit(hearts_left: int) -> void:
 	versus_speed_change(0.0, VS_HIT_SPEED_MULT)
 	_invuln_left = HIT_INVULN
-	_pending_vy = KNOCKBACK_VY
-	linear_velocity.y = KNOCKBACK_VY
+	# No knockback: keep the current path and ghost through whatever was hit,
+	# so one mistake costs exactly one heart.
+	_ghost_left = HIT_INVULN
+	_set_ghost(true)
 	_stretch(Vector2(1.3, 0.7))
 	_burst(global_position, WorldConst.C_HAZARD, 18, 320.0, 0.5)
 	AudioManager.play("hurt", 0.04, -2.0)
 	GameManager.hitstop(0.05)
 	_popup("OUCH!  %d %s LEFT" % [hearts_left, "HEART" if hearts_left == 1 else "HEARTS"], Color("FF6B6B"))
 	_update_hurt_look(hearts_left)
+
+## While ghosting, solid hazards (red walls) stop colliding with the ball;
+## spikes and enemies are already ignored because kill() checks _invuln_left.
+func _set_ghost(on: bool) -> void:
+	if on:
+		collision_mask &= ~WorldConst.LAYER_HAZARD
+	else:
+		collision_mask |= WorldConst.LAYER_HAZARD
 
 func teleport(pos: Vector2) -> void:
 	_pending_pos = pos
@@ -239,6 +256,8 @@ func teleport(pos: Vector2) -> void:
 	global_position = pos
 	linear_velocity = Vector2.ZERO
 	speed = START_SPEED
+	_ghost_left = 0.0
+	_set_ghost(false)
 	_invuln_left = 0.6
 	_stomp_charge = 0.0
 	if trail:
@@ -247,11 +266,18 @@ func teleport(pos: Vector2) -> void:
 func _fall_out() -> void:
 	if dead or not GameManager.is_alive(player_index):
 		return
-	versus_speed_change(0.0, VS_HIT_SPEED_MULT)
-	var left: int = GameManager.hurt_variety(player_index)
-	if left <= 0:
-		_die()
-		return
+	# Falling while still blinking from a hit is part of that same mistake:
+	# bounce back without taking a second heart.
+	var free_rescue := _ghost_left > 0.0
+	var left: int = GameManager.player(player_index).health
+	if not free_rescue:
+		versus_speed_change(0.0, VS_HIT_SPEED_MULT)
+		left = GameManager.hurt_variety(player_index)
+		if left <= 0:
+			_die()
+			return
+	_ghost_left = 0.0
+	_set_ghost(false)
 	_invuln_left = HIT_INVULN + 0.4
 	_pending_y = RESCUE_Y
 	_pending_vy = -120.0
