@@ -21,6 +21,17 @@ each run, and the LEADERBOARD screen shows the top 50.
    ```
 
 5. Re-export the web build. The leaderboard switches on as soon as the URL is set.
+6. For **account progress sync** (coins, upgrades, varieties, awards and stats follow you to any device you
+   log in on), also run everything from [`progress.sql`](progress.sql) in the SQL Editor. Until it's run, the
+   game keeps working and just keeps progress on each device.
+
+## How progress sync works
+
+When you log in (or open the game while logged in), the game downloads your account's progress and merges it
+with this device: counters such as coins earned, coins spent and best distance keep the larger value, and
+upgrades, varieties and awards are combined. It then uploads the merged result, and uploads again a few
+seconds after anything changes. It never uploads before that first download, so logging in on a fresh
+device can't wipe your account. Settings such as volume and keybinds stay per device.
 
 The publishable/anon key is meant to be public, so it's fine in the game files. Never put the
 **secret** or **service_role** key in the game.
