@@ -23,6 +23,7 @@ func _run() -> void:
 		"test_shield_absorbs_hit",
 		"test_pause_resume",
 		"test_hotbar_toggle",
+		"test_ghost_race",
 		"test_menu_instantiates",
 		"test_guided_levels_are_fixed",
 		"test_random_levels_after_guided",
@@ -100,6 +101,7 @@ func _reset() -> void:
 	_gm().input_locked = false
 	_gm().custom_map = {}
 	_gm().tutorial = false
+	_gm().ghost_replay = {}
 	_gm().map_from_builder = false
 	_gm().time_hold = 1.0
 	Engine.time_scale = 1.0
@@ -316,6 +318,42 @@ func test_hotbar_toggle() -> String:
 	controls.free()
 	if not listed:
 		return "Hide Hotbar is missing from the Controls settings"
+	return ""
+
+func test_ghost_race() -> String:
+	# Record a short real run, then race it: same seed, same course, ghost follows.
+	await _start_main()
+	_remove_hazards()
+	await _frames(90)
+	var gen: Node = _main.get_node("LevelGenerator")
+	var rec: Node = _main.get("recorder")
+	_gm().end_run(0)
+	await _frames(2)
+	var replay := ReplayStore.load_replay(String(rec.last_path))
+	if not _gm().can_race(replay):
+		return "a finished solo run should be raceable"
+	ReplayStore.remove(String(rec.last_path))
+	# Generate far past the fixed warm-up levels so the seeded random levels are compared too.
+	gen.update_for_x(20000.0)
+	var first_layout: String = gen.get_layout_signature()
+	await _reset()
+	_gm().ghost_replay = replay
+	await _start_main()
+	await _frames(2)
+	if not _main.has_node("Ghost"):
+		return "racing a replay did not add a ghost"
+	gen = _main.get_node("LevelGenerator")
+	if int(gen.get_run_seed()) != int(replay.seed):
+		return "ghost race did not reuse the replay's seed"
+	await _frames(40)
+	var ghost: Node2D = _main.get_node("Ghost")
+	if ghost.ghost_time() <= 0.1:
+		return "ghost did not start moving with the run"
+	if absf(ghost.global_position.x - _ball().global_position.x) > 80.0:
+		return "ghost drifted away from an identical run (dx=%d)" % int(ghost.global_position.x - _ball().global_position.x)
+	gen.update_for_x(20000.0)
+	if gen.get_layout_signature() != first_layout:
+		return "ghost race built a different course"
 	return ""
 
 func test_menu_instantiates() -> String:
