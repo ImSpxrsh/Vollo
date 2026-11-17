@@ -28,9 +28,6 @@ each run, and the LEADERBOARD screen shows the top 50.
    PUBLISH maps from the map builder, everyone browse and play them from COMMUNITY MAPS, and refuses offensive
    player names and map names (the game checks too, but the server is what enforces it).
 
-To **reset the leaderboard** (everyone's best back to 0, accounts and progress kept), run
-[`reset_leaderboard.sql`](reset_leaderboard.sql). It can't be undone.
-
 ## How progress sync works
 
 When you log in (or open the game while logged in), the game downloads your account's progress and merges it
