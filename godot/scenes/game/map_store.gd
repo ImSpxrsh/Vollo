@@ -110,6 +110,39 @@ const TUTORIAL_LESSONS := [
 		"text": "Your score is metres travelled plus bonuses. Coins buy upgrades in the SHOP, and every 60 m is a new level. Esc or P pauses.\nRoll through the FINISH flag!"},
 ]
 
+const MAX_OBJECTS := 600
+const KINDS := ["low_wall", "hang_wall", "spikes_low", "spikes_high", "enemy", "grump", "coin",
+	"shield", "slowmo", "booster", "bridge", "finish", "ground"]
+## Allowed range for each numeric field a map object can have.
+const FIELD_RANGES := {"x": [0.0, 200000.0], "y": [0.0, 720.0], "h": [0.2, 1.0], "gy": [0.0, 900.0],
+	"n": [1.0, 8.0], "w": [8.0, 4000.0], "bob": [0.0, 200.0], "patrol": [0.0, 400.0]}
+
+## Cleans a map that came from someone else (community maps): only known object
+## kinds, numbers clamped to sane ranges, at most MAX_OBJECTS objects.
+static func sanitize(map: Variant) -> Dictionary:
+	var out := {"name": "", "objects": []}
+	if typeof(map) != TYPE_DICTIONARY:
+		return out
+	out.name = String((map as Dictionary).get("name", "")).left(24)
+	var objects: Variant = (map as Dictionary).get("objects", [])
+	if typeof(objects) != TYPE_ARRAY:
+		return out
+	for obj: Variant in objects:
+		if (out.objects as Array).size() >= MAX_OBJECTS:
+			break
+		if typeof(obj) != TYPE_DICTIONARY or not KINDS.has(String((obj as Dictionary).get("k", ""))):
+			continue
+		var clean := {"k": String(obj.k)}
+		for field: String in FIELD_RANGES:
+			if (obj as Dictionary).has(field):
+				var v: Variant = obj[field]
+				if typeof(v) == TYPE_INT or typeof(v) == TYPE_FLOAT:
+					var r: Array = FIELD_RANGES[field]
+					clean[field] = clampf(float(v), float(r[0]), float(r[1]))
+		if clean.has("x"):
+			(out.objects as Array).append(clean)
+	return out
+
 static func safe_name(map_name: String) -> String:
 	var out := ""
 	for ch in map_name.strip_edges():

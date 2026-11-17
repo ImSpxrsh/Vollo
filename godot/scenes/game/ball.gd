@@ -159,6 +159,7 @@ func bounce(vy: float) -> void:
 	if dead:
 		return
 	var clutch := is_near_hazard(CLUTCH_RADIUS)
+	var maxed := clutch and GameManager.player(player_index).combo >= GameManager.MAX_COMBO
 	_stomp_charge = STOMP_WINDOW
 	_pending_vy = vy
 	linear_velocity.y = vy
@@ -167,9 +168,10 @@ func bounce(vy: float) -> void:
 	_pop_sprite(BOUNCE_SPARKLE, global_position + Vector2(0, RADIUS * 0.6), 0.32)
 	AudioManager.play("boing", 0.04, 0.0, 1.0 + (0.08 * GameManager.player(player_index).combo if clutch else 0.0))
 	GameManager.register_bounce(clutch, global_position, player_index)
-	if clutch:
+	if maxed:
+		_popup("MAX STREAK  ·  NO BONUS", Color("C49A68"))
+	elif clutch:
 		versus_speed_change(VS_CLUTCH_SPEED)
-	if clutch:
 		AudioManager.play("clutch", 0.02, -3.0, 1.0 + 0.06 * GameManager.player(player_index).combo)
 		var c: int = GameManager.player(player_index).combo
 		_popup("CLUTCH!" if c <= 1 else "CLUTCH  x%d" % c, Color("FFD166"))
