@@ -24,6 +24,12 @@ each run, and the LEADERBOARD screen shows the top 50.
 6. For **account progress sync** (coins, upgrades, varieties, awards and stats follow you to any device you
    log in on), also run everything from [`progress.sql`](progress.sql) in the SQL Editor. Until it's run, the
    game keeps working and just keeps progress on each device.
+7. For **community maps** and the **name filter**, run [`community.sql`](community.sql). It lets logged-in players
+   PUBLISH maps from the map builder, everyone browse and play them from COMMUNITY MAPS, and refuses offensive
+   player names and map names (the game checks too, but the server is what enforces it).
+
+To **reset the leaderboard** (everyone's best back to 0, accounts and progress kept), run
+[`reset_leaderboard.sql`](reset_leaderboard.sql). It can't be undone.
 
 ## How progress sync works
 
