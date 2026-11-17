@@ -25,6 +25,8 @@ func _run() -> void:
 		"test_hotbar_toggle",
 		"test_ghost_race",
 		"test_progress_merge",
+		"test_name_filter",
+		"test_community_maps",
 		"test_menu_instantiates",
 		"test_guided_levels_are_fixed",
 		"test_random_levels_after_guided",
@@ -395,6 +397,55 @@ func test_progress_merge() -> String:
 	_sm().reset_progress()
 	return ""
 
+func test_name_filter() -> String:
+	for bad in ["fuck", "xX_FuCk_Xx", "f_u_c_k", "fuuuck", "5h1t", "big_ass", "ass", "N1GG3R", "kkk_fan", "Sex", "dickhead99"]:
+		if NameFilter.is_clean(bad):
+			return "name filter let '%s' through" % bad
+	for ok in ["Voll", "Classic", "Grass_Roller", "Speedo", "Peacock", "Dickens", "assassin", "Harvest Heights", "My Map", "Pecan", "kicker"]:
+		if not NameFilter.is_clean(ok):
+			return "name filter wrongly blocked '%s'" % ok
+	var lb := root.get_node("Leaderboard")
+	var res: Dictionary = await lb.register("shit_lord", "password")
+	if res.ok or String(res.get("code", "")) != "rude_name":
+		return "registering an offensive name should be refused before reaching the server"
+	return ""
+
+func test_community_maps() -> String:
+	var dirty := {"name": "A very long map name that goes on and on", "objects": [
+		{"k": "low_wall", "x": 500, "h": 9.0}, {"k": "hack", "x": 1}, "junk",
+		{"k": "ground", "x": 100, "w": 999999}, {"k": "coin"},
+	]}
+	var clean := MapStore.sanitize(dirty)
+	if (clean.objects as Array).size() != 2:
+		return "sanitize should keep only valid objects (kept %d)" % (clean.objects as Array).size()
+	if float(clean.objects[0].h) > 1.0 or float(clean.objects[1].w) > 4000.0:
+		return "sanitize did not clamp values"
+	if String(clean.name).length() > 24:
+		return "sanitize did not trim the map name"
+	var menu: Node = load("res://scenes/ui/MainMenu.tscn").instantiate()
+	root.add_child(menu)
+	await _frames(2)
+	var has_button := menu.find_child("CommunityButton", true, false) != null
+	menu.queue_free()
+	if not has_button:
+		return "main menu has no COMMUNITY MAPS button"
+	var community: Node = load("res://scenes/ui/CommunityMapsMenu.tscn").instantiate()
+	root.add_child(community)
+	await _frames(2)
+	var msg: Label = community.get("_message")
+	var offline_ok := msg.visible and msg.text.contains("server")
+	community.queue_free()
+	if not offline_ok:
+		return "community maps screen should explain when it's offline"
+	var builder: Node = load("res://scenes/ui/MapBuilder.tscn").instantiate()
+	root.add_child(builder)
+	await _frames(2)
+	var publish := builder.find_child("PublishButton", true, false)
+	builder.queue_free()
+	if publish == null:
+		return "map builder has no PUBLISH button"
+	return ""
+
 func test_menu_instantiates() -> String:
 	var menu: Node = load("res://scenes/ui/MainMenu.tscn").instantiate()
 	root.add_child(menu)
@@ -595,7 +646,19 @@ func test_clutch_only_near_hazards() -> String:
 	spike.global_position = _ball().global_position + Vector2(120, 60)
 	await _frames(1)
 	_ball().bounce(-600.0)
-	return "" if _gm().combo == 2 else "a bounce next to a spike was not a clutch"
+	if _gm().combo != 2:
+		return "a bounce next to a spike was not a clutch"
+	# Build to the x5 cap, then further clutches must score nothing.
+	for k in 3:
+		_ball().bounce(-600.0)
+	if _gm().combo != _gm().MAX_COMBO:
+		return "clutch streak should reach x%d (got x%d)" % [_gm().MAX_COMBO, _gm().combo]
+	var bonus_at_cap: int = _gm().bonus
+	for k in 3:
+		_ball().bounce(-600.0)
+	if _gm().bonus != bonus_at_cap:
+		return "clutches after a x5 streak still gave points (+%d)" % (_gm().bonus - bonus_at_cap)
+	return ""
 
 func test_bounce_enemy_away() -> String:
 	await _start_main()
