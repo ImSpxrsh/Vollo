@@ -114,6 +114,11 @@ func add_bonus(metres: int) -> void:
 
 func register_bounce(clutch: bool, position: Vector2) -> void:
 	bounces += 1
+	if clutch and combo >= GameManager.MAX_COMBO:
+		# Streak is maxed at x5: further clutches give no points and don't
+		# extend the streak, so clutch farming can't inflate distance.
+		bounced.emit(clutch, position)
+		return
 	if clutch:
 		combo = mini(GameManager.MAX_COMBO, combo + 1)
 		best_combo = maxi(best_combo, combo)

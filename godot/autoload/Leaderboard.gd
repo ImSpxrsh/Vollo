@@ -16,6 +16,11 @@ const ERRORS := {
 	"bad_token": "Signed out, please log in again",
 	"bad_score": "Score rejected",
 	"bad_progress": "Progress rejected",
+	"rude_name": "Please pick a different name",
+	"bad_map_name": "Map names are 1-24 characters",
+	"bad_map": "That map can't be published (empty or too big)",
+	"too_many_maps": "You can publish up to 25 maps; delete one first",
+	"no_map": "That map was removed",
 }
 ## Seconds to wait after a save before uploading progress (batches quick saves).
 const SYNC_DELAY := 3.0
@@ -94,6 +99,8 @@ func is_logged_in() -> bool:
 	return not token.is_empty()
 
 func register(user_name: String, password: String) -> Dictionary:
+	if not NameFilter.is_clean(user_name):
+		return {"ok": false, "code": "rude_name", "error": ERRORS.rude_name}
 	var res := await _rpc("voll_register", {"p_username": user_name.strip_edges(), "p_password": password})
 	return await _after_login(res)
 
@@ -132,6 +139,38 @@ func submit(score: int) -> Dictionary:
 
 func top(limit := 20) -> Dictionary:
 	return await _rpc("voll_top", {"p_limit": limit})
+
+# --- community maps ------------------------------------------------------------
+
+## Publishes (or updates, same name) one of your maps so everyone can play it.
+func publish_map(map: Dictionary) -> Dictionary:
+	if not is_logged_in():
+		return {"ok": false, "error": "Log in on the LEADERBOARD screen to publish maps"}
+	var map_name := String(map.get("name", "")).strip_edges()
+	if not NameFilter.is_clean(map_name):
+		return {"ok": false, "code": "rude_name", "error": ERRORS.rude_name}
+	var clean := MapStore.sanitize(map)
+	clean.name = map_name
+	return await _rpc("voll_publish_map", {"p_token": token, "p_name": map_name, "p_map": clean})
+
+## Lists published maps, newest first or "popular" (most played).
+func list_maps(sort := "new") -> Dictionary:
+	return await _rpc("voll_list_maps", {"p_sort": sort, "p_limit": 60})
+
+## Downloads one published map (counts as a play).
+func get_map(map_id: String) -> Dictionary:
+	var res := await _rpc("voll_get_map", {"p_id": map_id})
+	if res.ok and typeof(res.data) == TYPE_DICTIONARY:
+		var data: Dictionary = res.data
+		var map := MapStore.sanitize(data.get("map", {}))
+		map.name = String(data.get("name", "Community map"))
+		res.map = map
+	return res
+
+func delete_map(map_id: String) -> Dictionary:
+	if not is_logged_in():
+		return {"ok": false, "error": "Not logged in"}
+	return await _rpc("voll_delete_map", {"p_token": token, "p_id": map_id})
 
 func _after_login(res: Dictionary) -> Dictionary:
 	if not res.ok:
