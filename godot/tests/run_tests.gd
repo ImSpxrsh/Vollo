@@ -24,6 +24,7 @@ func _run() -> void:
 		"test_pause_resume",
 		"test_hotbar_toggle",
 		"test_ghost_race",
+		"test_progress_merge",
 		"test_menu_instantiates",
 		"test_guided_levels_are_fixed",
 		"test_random_levels_after_guided",
@@ -354,6 +355,44 @@ func test_ghost_race() -> String:
 	gen.update_for_x(20000.0)
 	if gen.get_layout_signature() != first_layout:
 		return "ghost race built a different course"
+	return ""
+
+func test_progress_merge() -> String:
+	var lb := root.get_node("Leaderboard")
+	if lb.is_configured():
+		return "test runs must stay offline (no real leaderboard/account calls)"
+	_sm().reset_progress()
+	_sm().total_stars = 50
+	_sm().coins_spent = 10
+	_sm().high_score = 300
+	_sm().upgrades.assign(["magnet"])
+	var cloud := {
+		"high_score": 120, "total_stars": 400, "coins_spent": 90, "total_bounces": 7,
+		"stats": {"runs_played": 12, "best_distance": 120},
+		"upgrades": ["extra_heart", "magnet", "not_a_real_upgrade"],
+		"unlocked_varieties": ["yellow", "orange", "bogus"],
+		"earned_awards": ["first_steps"], "selected_variety": "orange",
+	}
+	if not _sm().merge_progress(cloud):
+		return "merging account progress reported no change"
+	if _sm().high_score != 300 or _sm().total_stars != 400 or _sm().coins_spent != 90:
+		return "counters should keep the larger value (best %d, earned %d, spent %d)" % [_sm().high_score, _sm().total_stars, _sm().coins_spent]
+	if not (_sm().has_upgrade("extra_heart") and _sm().has_upgrade("magnet")) or _sm().upgrades.size() != 2:
+		return "upgrades were not combined correctly: %s" % str(_sm().upgrades)
+	if _sm().unlocked_varieties.has("bogus") or not _sm().unlocked_varieties.has("orange"):
+		return "varieties were not combined correctly"
+	if _sm().selected_variety != "orange" or int(_sm().stats.runs_played) != 12:
+		return "selected variety / stats did not come across"
+	var snap: Dictionary = _sm().progress_snapshot()
+	if _sm().merge_progress(snap):
+		return "merging the same progress twice should change nothing"
+	lb.set("token", "fake-token")
+	lb.set("progress_synced", false)
+	var res: Dictionary = await lb.push_progress()
+	lb.set("token", "")
+	if res.ok:
+		return "progress must not upload before the first download"
+	_sm().reset_progress()
 	return ""
 
 func test_menu_instantiates() -> String:
