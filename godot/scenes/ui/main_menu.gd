@@ -6,6 +6,7 @@ const SHOP_MENU := preload("res://scenes/ui/ShopMenu.tscn")
 const VERSUS_SETUP := preload("res://scenes/ui/VersusSetup.tscn")
 const LEADERBOARD_MENU := preload("res://scenes/ui/LeaderboardMenu.tscn")
 const REPLAYS_MENU := preload("res://scenes/ui/ReplaysMenu.tscn")
+const COMMUNITY_MENU := preload("res://scenes/ui/CommunityMapsMenu.tscn")
 const BACKDROP_MARGIN := Vector2(70, 40)
 
 @onready var grid_rect: ColorRect = $BackgroundLayer/Grid
@@ -147,13 +148,14 @@ func _add_varieties_button() -> void:
 	tutorial_button = _menu_button("TutorialButton", "TUTORIAL", open_tutorial)
 	var replays_button := _menu_button("ReplaysButton", "REPLAYS", open_replays)
 	var builder_button := _menu_button("BuilderButton", "MAP BUILDER", open_builder)
+	var community_button := _menu_button("CommunityButton", "COMMUNITY MAPS", open_community)
 	_grid = GridContainer.new()
 	_grid.name = "MoreButtons"
 	_grid.columns = 2
 	_grid.add_theme_constant_override("h_separation", 8)
 	_grid.add_theme_constant_override("v_separation", 8)
 	new_game_button.add_sibling(_grid)
-	var order: Array[Control] = [tutorial_button, versus_button, varieties_button, shop_button, leaderboard_button, replays_button, builder_button]
+	var order: Array[Control] = [tutorial_button, versus_button, varieties_button, shop_button, leaderboard_button, replays_button, builder_button, community_button]
 	for n in ["OptionsButton", "CreditsButton", "ExitButton"]:
 		var b := new_game_button.get_parent().get_node_or_null(n) as Control
 		if b:
@@ -161,7 +163,8 @@ func _add_varieties_button() -> void:
 	for b in order:
 		if b.get_parent():
 			b.get_parent().remove_child(b)
-		b.custom_minimum_size = Vector2(196, 40)
+		# 34 px tall so the sixth row (COMMUNITY MAPS) fits where five rows of 40 did.
+		b.custom_minimum_size = Vector2(196, 34)
 		_grid.add_child(b)
 	var box := new_game_button.get_parent() as Control
 	box.offset_left = -200
@@ -214,6 +217,12 @@ func open_builder() -> void:
 		return
 	AudioManager.play("click")
 	GameManager.open_builder()
+
+func open_community() -> void:
+	if sub_menu != null:
+		return
+	AudioManager.play("click")
+	_open_sub_menu(COMMUNITY_MENU)
 
 func open_replays() -> void:
 	if sub_menu != null:

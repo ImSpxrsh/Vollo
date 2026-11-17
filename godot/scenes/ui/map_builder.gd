@@ -42,6 +42,7 @@ var _status: Label
 var _count_label: Label
 var _ui_hover := false
 var _dirty := false
+var _publishing := false
 
 func _ready() -> void:
 	get_tree().paused = false
@@ -145,6 +146,7 @@ func _build_ui() -> void:
 		_dirty = true)
 	bar.add_child(_name_edit)
 	bar.add_child(_button("SAVE", save_map, "SaveButton"))
+	bar.add_child(_button("PUBLISH", publish_map, "PublishButton"))
 	_load_menu = OptionButton.new()
 	_load_menu.name = "LoadMenu"
 	_load_menu.custom_minimum_size = Vector2(190, 38)
@@ -408,6 +410,32 @@ func save_map() -> void:
 	AudioManager.play("buy" if not path.is_empty() else "deny")
 	_refresh_load_menu(path)
 	_update_status()
+
+## Shares the map on COMMUNITY MAPS (needs a leaderboard login). Publishing again
+## with the same name updates it.
+func publish_map() -> void:
+	if _publishing:
+		return
+	if String(map.name).strip_edges().is_empty():
+		map.name = "My Map"
+		_name_edit.text = map.name
+	if (map.objects as Array).size() < 2:
+		AudioManager.play("deny")
+		_status.text = "Add some obstacles before publishing."
+		return
+	if not Leaderboard.is_logged_in():
+		AudioManager.play("deny")
+		_status.text = "Log in on the LEADERBOARD screen first, then publish."
+		return
+	_publishing = true
+	MapStore.save(to_dict())
+	_status.text = "Publishing \"%s\"..." % String(map.name)
+	var res: Dictionary = await Leaderboard.publish_map(to_dict())
+	_publishing = false
+	if not is_inside_tree():
+		return
+	AudioManager.play("buy" if res.ok else "deny")
+	_status.text = ("Published! Everyone can play \"%s\" from COMMUNITY MAPS." % String(map.name)) if res.ok else ("Couldn't publish: %s" % String(res.get("error", "unknown error")))
 
 func _refresh_load_menu(select := "") -> void:
 	_load_menu.clear()
